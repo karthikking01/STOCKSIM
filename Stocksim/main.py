@@ -14,25 +14,28 @@ working principal
 www.16colo.rs
 """
 #120x30
-import curses
-from curses import wrapper
+from blessed import Terminal
+term = Terminal()
 
-top = str("╔")+str("═"*118)+str("╗")
-mid = str("║")+str(" "*118)+str("║")
-bot = str("╚")+str("═"*118)+str("╝")
+pricetablet = 
 
-
-
-def homescreen(stdscr):
-    stdscr.clear()
-    stdscr.addstr(0, 0,top)
-    for i in range(1, 28):
-        stdscr.addstr(i, 0, mid)
-    stdscr.addstr(28, 0, bot)
-    # dim = list(os.get_terminal_size())
-    # lenx=dim[0]-2
-    # leny=dim[1]-2
-    stdscr.getch()
-
-if __name__=="__main__":
-    wrapper(homescreen)
+def homescreen():
+    with term.location(0,0), term.cbreak():
+        h,w = term.height,term.width
+        #print(h,w,term.number_of_colors)
+        top = str("╔")+str("═"*(w-2))+str("╗")
+        mid = str("║")+str(" "*(w-2))+str("║")
+        bot = str("╚")+str("═"*(w-2))+str("╝")
+        print(top)
+        print(mid*(h-3))
+        print(bot)
+    with term.location(w//8, 0), term.cbreak():
+        print(str("╦"))
+        for i in range(h-3):
+            with term.location(w//8, i+1):
+                print(str("║"))
+        with term.location(w//8, h-2):
+            print(str("╩"))
+    term.getch()
+    
+homescreen()
