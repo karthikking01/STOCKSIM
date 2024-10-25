@@ -14,6 +14,7 @@ k) at every 10 second update the price according to the data (ie simulate actual
 www.16colo.rs
 """
 #120x30
+from plot.data import TRD
 from blessed import Terminal
 import os
 term = Terminal()
@@ -36,10 +37,6 @@ def tabletplot(startl, code, price, change):
         print(tabl2)
         print(tabe)
         print(tablbot)
-
-def grapher():
-    pass
-
 def homescreen():
     global ftop, fst, fbot
     ftop = ("╔"+"═"*(bw)+"╗")
@@ -65,6 +62,8 @@ def homescreen():
                 print(str("║"))
         with term.location(w//8, h-2):
             print(str("╩"))
+    with term.location(w//8*2, 0), term.cbreak():
+        print(TRD)
 def endwin():            
     print(term.clear + term.home)
     os.system("cls")
