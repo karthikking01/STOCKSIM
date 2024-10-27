@@ -1,5 +1,6 @@
 import pandas as pd
 import yfinance as yf
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import time
 """
 1.Astral Blip         (ASBL)
@@ -58,10 +59,10 @@ def lff(name,sdate,dnrows):
                 df = pd.read_csv("Stocksim/plot/data/{}.csv".format(name),header=None,index_col=0,skiprows=count,nrows=dnrows) #skip number of lines equal to count and read dnrows lines
                 df.index = pd.to_datetime(df.index, format='%Y-%m-%d') # convert index to datetime
                 df.index.name=None # removing index name
-                df.columns = ["O","H","L","C","V"] # renaming index columns to simpler ones
-                df["D"] = df["C"]-df["O"] # change
-                df["D%"] = df["D"]/df["O"]*100 # perc change
-                df["height"] = df["H"]-df["L"] # height
+                df.columns = ["Open","High","Low","Close","Volume"] # renaming index columns to simpler ones
+                df["D"] = df["Close"]-df["Open"] # change
+                df["D%"] = df["D"]/df["Open"]*100 # perc change
+                df["height"] = df["High"]-df["Low"] # height
                 break
     return df, count+1
 def lfw(name):
@@ -97,10 +98,10 @@ class tradable:
         dx = pd.read_csv("Stocksim/plot/data/{}.csv".format(self.name),header=None,index_col=0,skiprows=self.eline-1,nrows=ndays)
         dx.index=pd.to_datetime(dx.index, format='%Y-%m-%d')
         dx.index.name=None
-        dx.columns = ["O","H","L","C","V"]
-        dx["D"] = dx["C"]-dx["O"]
-        dx["D%"] = dx["D"]/dx["O"]*100
-        dx["height"] = dx["H"]-dx['L']
+        dx.columns = ["Open","High","Low","Close","Volume"]
+        dx["D"] = dx["Close"]-dx["Open"]
+        dx["D%"] = dx["D"]/dx["Open"]*100
+        dx["height"] = dx["High"]-dx["Low"]
         self.data = pd.concat([self.data,dx],axis=0).iloc[ndays:]
         self.sline+=1
         self.eline+=1

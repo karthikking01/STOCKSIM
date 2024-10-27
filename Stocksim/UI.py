@@ -14,6 +14,8 @@ k) at every 10 second update the price according to the data (ie simulate actual
 www.16colo.rs
 """
 from plot.data import TRD, TRDX
+from plot.data import tradable
+import mplfinance as mpf
 import customtkinter as ctk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -22,12 +24,47 @@ import time
 bw = 110
 tw = (bw*2)+48
 
+binance_dark = {
+    "base_mpl_style": "dark_background",
+    "marketcolors": {
+        "candle": {"up": "#3dc985", "down": "#ef4f60"},  
+        "edge": {"up": "#3dc985", "down": "#ef4f60"},  
+        "wick": {"up": "#3dc985", "down": "#ef4f60"},  
+        "ohlc": {"up": "green", "down": "red"},
+        "volume": {"up": "#247252", "down": "#82333f"},  
+        "vcedge": {"up": "green", "down": "red"},  
+        "vcdopcod": False,
+        "alpha": 1
+    },
+    "mavcolors": ("#ad7739", "#a63ab2", "#62b8ba"),
+    "facecolor": "#1b1f24",
+    "gridcolor": "#2c2e31",
+    "gridstyle": "--",
+    "y_on_right": False,
+    "rc": {
+        "axes.grid": True,
+        "axes.grid.axis": "y",
+        "axes.edgecolor": "#474d56",
+        "axes.titlecolor": "red",
+        "figure.facecolor": "#161a1e",
+        "figure.titlesize": "x-large",
+        "figure.titleweight": "semibold",
+    },
+    "base_mpf_style": "binance-dark",
+}
+
 class customcandlestick(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
-        self.configure(width=1280-60-2*tw, height=672-2*48, fg_color="#fcf")
-        # self.canvas = 
+        trd =  tradable("ASBL","2023-12-01", 100)
+        self.configure(width=1280-60-2*268, height=672-48)
 
+        self.fig, self.ax = mpf.plot(trd.data, type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, title="ASBL", ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False, panel_ratios=(3,1),tight_layout=True)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self)
+        
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack()
+        
 class tab(ctk.CTkFrame):
     def __init__(self, parent, Code, Name, Curr, Dperc):
         super().__init__(parent)
@@ -39,12 +76,17 @@ class tab(ctk.CTkFrame):
         self.name = ctk.CTkLabel(self, text=TRDX[Code],width=bw, height=24,anchor="w",bg_color=labelc)
         self.curr = ctk.CTkLabel(self, text=Curr,width=bw, height=24,anchor="e",bg_color=labelc)
         self.Dperc = ctk.CTkLabel(self, text=Dperc,width=bw, height=24,anchor="e",bg_color=labelc)
-        self.tradbutton = ctk.CTkButton(self, text="Trade", width=48, height=48, corner_radius=0, fg_color="#2b2b2b",anchor="c")
+        self.tradbutton = ctk.CTkButton(self, text="Trade", width=48, height=48, corner_radius=0, fg_color="#2b2b2b",anchor="c",command=self.chg)
         self.code.grid(row=0,column=0)
         self.name.grid(row=1,column=0)
         self.curr.grid(row=0,column=1)
         self.Dperc.grid(row=1,column=1)
         self.tradbutton.grid(row=0,column=2,rowspan=2)
+    def chg(self):
+        print("hi")
+        self.tradbutton.configure(state="disabled")
+        self.curr.configure(text="0")
+        self.Dperc.configure(text="0")
 
 class UI(ctk.CTk):
     def __init__(self):
