@@ -40,32 +40,32 @@ from datetime import *
 # # x = msft.history(period="max")
 # # pd.DataFrame(x).loc[:,"Open":"Volume"].to_csv("Stocksim/plot/data/{}.csv".format("MSFT"),header=False)
 # import customtkinter as ctk
-# import matplotlib.pyplot as plt
-# from plot.data import tradable
+import matplotlib.pyplot as plt
+from plot.data import tradable
 
-# tr = tradable("ASBL","2023-02-01", 10)
-# up = tr.data[tr.data["D%"]>0]
-# down = tr.data[tr.data["D%"]<0]
+tr = tradable("ASBL","2023-02-01", 10)
+up = tr.data[tr.data["D%"]>0]
+down = tr.data[tr.data["D%"]<0]
 
-# print(up)
-# print(down)
+print(up)
+print(down)
 
-# col1 = 'red'
-# col2 = 'green'
+col1 = 'red'
+col2 = 'green'
 
-# plt.bar(up.index, up.Close-up.Open, bottom=up.Open, color=col1) 
-# plt.bar(up.index, up.High-up.Close,width=0.2, bottom=up.Close, color=col1) 
-# plt.bar(up.index, up.Low-up.Open,width=0.2, bottom=up.Open, color=col1) 
+plt.bar(up.index, up.Close-up.Open, bottom=up.Open, color=col1) 
+plt.bar(up.index, up.High-up.Close,width=0.2, bottom=up.Close, color=col1) 
+plt.bar(up.index, up.Low-up.Open,width=0.2, bottom=up.Open, color=col1) 
 
-# plt.bar(down.index, down.Close-down.Open, bottom=down.Open, color=col2) 
-# plt.bar(down.index, down.High-down.Open, width=0.2, bottom=down.Open, color=col2) 
-# plt.bar(down.index, down.Low-down.Close, width=0.2,bottom=down.Close, color=col2)
+plt.bar(down.index, down.Close-down.Open, bottom=down.Open, color=col2) 
+plt.bar(down.index, down.High-down.Open, width=0.2, bottom=down.Open, color=col2) 
+plt.bar(down.index, down.Low-down.Close, width=0.2,bottom=down.Close, color=col2)
 
-# plt.show()
+plt.show()
 
-datex = "2023-02-01"
-def next_day(date):
-    date = datetime.strptime(date, "%Y-%m-%d")
-    date = date + timedelta(days=1)
-    return str(date.strftime("%Y-%m-%d"))
-print(next_day(datex))
+# datex = "2023-02-01"
+# def next_day(date):
+#     date = datetime.strptime(date, "%Y-%m-%d")
+#     date = date + timedelta(days=1)
+#     return str(date.strftime("%Y-%m-%d"))
+# print(next_day(datex))

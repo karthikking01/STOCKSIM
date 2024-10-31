@@ -18,7 +18,6 @@ from plot.data import tradable
 import mplfinance as mpf
 from functools import partial
 import customtkinter as ctk
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from datetime import *
 
@@ -54,19 +53,20 @@ binance_dark = {
     },
     "base_mpf_style": "binance-dark",
 }
-
+        
 class customcandlestick(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
         self.code = "ASBL"
-        trd = tradable(self.code,date, 50)
-        self.configure(width=1280-60-2*268, height=672-48)
+        trd = tradable(self.code,date, 21)
+        self.configure(width=1280, height=720)
 
-        self.fig, self.ax = mpf.plot(trd.data, type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, title="ASBL", ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False, panel_ratios=(3,1),tight_layout=True)
+        self.fig, self.ax = mpf.plot(trd.data, type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=1.06, panel_ratios=(3,1),tight_layout=True)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack()
+        self.canvas.get_tk_widget()
+        self.canvas.get_tk_widget().grid(row=0,column=0)
         
 class tab(ctk.CTkFrame):
     def __init__(self, parent, Code, Name, Curr, Dperc):
@@ -169,10 +169,11 @@ class UI(ctk.CTk):
         
         
         self.botrightframe = ctk.CTkFrame(self, width=tw, height=360, corner_radius=0, fg_color="#fff",border_color="#000",border_width=5)
+        self.history = ctk.CTkLabel(self.botrightframe, text="History", fg_color="#fff", width=tw, height=12)
         
         self.iconframe = ctk.CTkFrame(self,fg_color="gray", width=60, height=720, corner_radius=0)
         
-        self.graphspace = customcandlestick(self).place(x=60+tw, y=48+48)
+        self.graphspace = customcandlestick(self)
         
         # print(self.btndict)
         self.btndict["ASBL"].tradbutton.configure(state="disabled")
@@ -197,11 +198,14 @@ class UI(ctk.CTk):
         self.shares.grid(row=12,column=0,columnspan=1, rowspan=2)
         self.netval.grid(row=12,column=1,columnspan=1, rowspan=2)
         
+        self.history.grid(row=0,column=0, columnspan=2, rowspan=1)
+        
         self.iconframe.place(x=0,y=0)
         self.leftframe.place(x=60,y=0)
         self.topbar.place(x=60+tw,y=0)
         self.toprightframe.place(x=1280-tw,y=0)
         self.botrightframe.place(x=1280-tw,y=360)
+        self.graphspace.place(x=60+tw, y=48+48)
         
     def next_day(self):
         global date
