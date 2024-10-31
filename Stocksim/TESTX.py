@@ -3,7 +3,7 @@
 # import datetime 
 # import os
 # import yfinance as yf
-# import time
+from datetime import *
 # # # # # replace the "demo" apikey below with your own key from https://www.alphavantage.co/support/#api-key
 
 # # # tradables = {"ASBL":"AAPL", "COMO":"NVDA", "COSA":"MSFT", "ENEC":"AXP", "HITR":"AMZN", "HOME":"KO", "INPA":"LLY", "REMT":"INTC", "RITM":"WMT", "SHFA":"JPM", "SHIF":"IBM", "THRE":"XOM", "UNRE":"UNH", "UNPO":"ORCL"}
@@ -39,51 +39,33 @@
 # # msft = yf.Ticker("MSFT")
 # # x = msft.history(period="max")
 # # pd.DataFrame(x).loc[:,"Open":"Volume"].to_csv("Stocksim/plot/data/{}.csv".format("MSFT"),header=False)
-import customtkinter as ctk
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+# import customtkinter as ctk
+# import matplotlib.pyplot as plt
+# from plot.data import tradable
 
-import yfinance as yf
-class TradingApp:
-    def __init__(self):
-        ctk.set_appearance_mode("dark")
-        self.root = ctk.CTk()
-        self.root.geometry("1200x800")
-        self.root.title("Trading App")
+# tr = tradable("ASBL","2023-02-01", 10)
+# up = tr.data[tr.data["D%"]>0]
+# down = tr.data[tr.data["D%"]<0]
 
-        # --- Create UI elements ---
-        self.ticker_entry = ctk.CTkEntry(self.root, placeholder_text="Enter ticker symbol")
-        self.ticker_entry.pack(pady=10)
+# print(up)
+# print(down)
 
-        self.fetch_button = ctk.CTkButton(self.root, text="Fetch Data", command=self.fetch_data)
-        self.fetch_button.pack(pady=5)
+# col1 = 'red'
+# col2 = 'green'
 
-        self.plot_frame = ctk.CTkFrame(self.root)
-        self.plot_frame.pack(pady=10, fill='both', expand=True)
+# plt.bar(up.index, up.Close-up.Open, bottom=up.Open, color=col1) 
+# plt.bar(up.index, up.High-up.Close,width=0.2, bottom=up.Close, color=col1) 
+# plt.bar(up.index, up.Low-up.Open,width=0.2, bottom=up.Open, color=col1) 
 
-        # --- Matplotlib setup ---
-        self.fig, self.ax = plt.subplots()
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_frame)
-        self.canvas.get_tk_widget().pack(fill='both', expand=True)
+# plt.bar(down.index, down.Close-down.Open, bottom=down.Open, color=col2) 
+# plt.bar(down.index, down.High-down.Open, width=0.2, bottom=down.Open, color=col2) 
+# plt.bar(down.index, down.Low-down.Close, width=0.2,bottom=down.Close, color=col2)
 
-        self.root.mainloop()
+# plt.show()
 
-    def fetch_data(self):
-        ticker = self.ticker_entry.get()
-        try:
-            # Fetch data from Yahoo Finance
-            data = yf.download(ticker, period="1mo") 
-
-            # Plot the data
-            self.ax.clear()
-            self.ax.plot(data['Close'])
-            self.ax.set_title(f"{ticker} Closing Price")
-            self.ax.set_xlabel("Date")
-            self.ax.set_ylabel("Price")
-            self.canvas.draw()
-
-        except Exception as e:
-            ctk.CTkLabel(self.root, text=f"Error fetching data: {e}").pack()
-
-if __name__ == "__main__":
-    app = TradingApp()
+datex = "2023-02-01"
+def next_day(date):
+    date = datetime.strptime(date, "%Y-%m-%d")
+    date = date + timedelta(days=1)
+    return str(date.strftime("%Y-%m-%d"))
+print(next_day(datex))

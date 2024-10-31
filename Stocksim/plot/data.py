@@ -94,24 +94,23 @@ class tradable:
         else:
             raise ValueError("Invalid Name: {} is not a valid Material REFER TO TRD".format(self.name()))
     
-    def movedays(self, ndays):
-        dx = pd.read_csv("Stocksim/plot/data/{}.csv".format(self.name),header=None,index_col=0,skiprows=self.eline-1,nrows=ndays)
-        dx.index=pd.to_datetime(dx.index, format='%Y-%m-%d')
-        dx.index.name=None
-        dx.columns = ["Open","High","Low","Close","Volume"]
-        dx["D"] = dx["Close"]-dx["Open"]
-        dx["D%"] = dx["D"]/dx["Open"]*100
-        dx["height"] = dx["High"]-dx["Low"]
-        self.data = pd.concat([self.data,dx],axis=0).iloc[ndays:]
-        self.sline+=1
-        self.eline+=1
+    # def movedays(self, ndays):
+    #     dx = pd.read_csv("Stocksim/plot/data/{}.csv".format(self.name),header=None,index_col=0,skiprows=self.eline-1,nrows=ndays)
+    #     dx.index=pd.to_datetime(dx.index, format='%Y-%m-%d')
+    #     dx.index.name=None
+    #     dx.columns = ["Open","High","Low","Close","Volume"]
+    #     dx["D"] = dx["Close"]-dx["Open"]
+    #     dx["D%"] = dx["D"]/dx["Open"]*100
+    #     dx["height"] = dx["High"]-dx["Low"]
+    #     self.data = pd.concat([self.data,dx],axis=0).iloc[ndays:]
+    #     self.sline+=1
+    #     self.eline+=1
 
-    def nextday(self):
-        self.movedays(1)
+    # def nextday(self):
+    #     self.movedays(1)
     
 if __name__ == "__main__":
     test=tradable("ASBL","2023-08-01", 100)
     for i in range(1000):
         print(test.data)
-        test.nextday()
         time.sleep(1)
