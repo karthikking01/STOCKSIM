@@ -57,24 +57,24 @@ binance_dark = {
 # asbl=tradable("ASBL","2023-08-01", 100)
 # como=tradable("COMO","2023-08-01", 100)
 # mpf.plot(asbl.data, type="candle", style="charles", volume=True, title="ASBL", ylabel="Price", ylabel_lower="Shares Traded", show_nontrading=True, figscale=1.5, panel_ratios=(3,1))
-class customcandlestick(ctk.CTkFrame):
-    def __init__(self, parent):
-        super().__init__(parent)
-        asbl =  tradable("ASBL","2023-08-01", 50)
-        self.configure(width=1280-60-2*268, height=672-2*48, fg_color="#fcf")
+# class customcandlestick(ctk.CTkFrame):
+#     def __init__(self, parent):
+#         super().__init__(parent)
+#         asbl =  tradable("ASBL","2023-08-01", 50)
+#         self.configure(width=1280-60-2*268, height=672-2*48, fg_color="#fcf")
 
 
-        self.fig, self.ax = mpf.plot(asbl.data, type="candle", style=binance_dark, volume=True, title="ASBL", ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False, figscale=1.5, panel_ratios=(3,1))
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self)
+#         self.fig, self.ax = mpf.plot(asbl.data, type="candle", style=binance_dark, volume=True, title="ASBL", ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False, figscale=1.5, panel_ratios=(3,1))
+#         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(side="top", fill="both", expand=1)
+#         self.canvas.draw()
+#         self.canvas.get_tk_widget().pack(side="top", fill="both", expand=1)
         
-Tk = ctk.CTk()
-Tk.geometry("1280x720")
-Tk.title("Stocksim")
-Tk.resizable(False, False)
-Tk.configure(background="#1a1a1a")
-candlestick = customcandlestick(Tk)
-candlestick.pack()
-Tk.mainloop()
+# Tk = ctk.CTk()
+# Tk.geometry("1280x720")
+# Tk.title("Stocksim")
+# Tk.resizable(False, False)
+# Tk.configure(background="#1a1a1a")
+# candlestick = customcandlestick(Tk)
+# candlestick.pack()
+# Tk.mainloop()
