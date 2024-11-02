@@ -54,7 +54,7 @@ TR = {
     "ORCL": "Oracle Corp."
 }
 
-def lff(name,sdate:datetime.date,dnrows):
+def lff(name,sdate:datetime.date,dnrows, forward=True):
     """Loads Data from file ranging from sdate to sdate+dnrows"""
     with open("Stocksim/plot/data/{}.csv".format(name), "r") as f:
         for count, l in enumerate(f): #count number of iterations ie lines moved
@@ -70,8 +70,12 @@ def lff(name,sdate:datetime.date,dnrows):
     try:
         return df, count+1
     except UnboundLocalError:
-        nextday = sdate+datetime.timedelta(days=1)
-        return lff(name,nextday,dnrows)
+        if forward:
+            nextday = sdate+datetime.timedelta(days=1)
+            return lff(name,nextday,dnrows)
+        else:
+            prevday = sdate-datetime.timedelta(days=1)
+            return lff(name,prevday,dnrows,forward=False)
 
 def lfw(name):
     """Loads Ticker from Web"""
@@ -84,9 +88,10 @@ def lfw(name):
     
 class tradable:
     data = None
-    def __init__(self, name, sdate, dnrows, lastday = False):
+    def __init__(self, name, sdate, dnrows, lastday = False, forward=True):
         self.name = name
         if name in TR:
+            self.forward = forward
             self.ld = lastday
             self.dnrows = dnrows
             self.ticker = TR[name]
@@ -96,38 +101,38 @@ class tradable:
         
             try:
                 if self.ld == False:
-                    self.data, self.sline = lff(name,sdate,dnrows)
+                    self.data, self.sline = lff(name,sdate,dnrows, forward=self.forward)
                 else:
-                    self.data, self.sline = lff(name,sdate,dnrows)
+                    self.data, self.sline = lff(name,sdate,dnrows, forward=self.forward)
                     self.data = self.data.tail(1)
             except FileNotFoundError or pd.errors.EmptyDataError:
                 lfw(name)
                 if self.ld == False:
-                    self.data, self.sline = lff(name,sdate,dnrows)
+                    self.data, self.sline = lff(name,sdate,dnrows, forward=self.forward)
                 else:
-                    self.data, self.sline = lff(name,sdate,dnrows)
+                    self.data, self.sline = lff(name,sdate,dnrows, forward=self.forward)
                     self.data = self.data.tail(1)
             self.eline = self.sline+dnrows
         else:
-            raise ValueError("Invalid Name: {} is not a valid Material REFER TO TRD".format(name))
+            raise ValueError("Invalid Name: {} is not a valid Ticker REFER TO TRD".format(name))
     
-    def movedays(self, ndays):
-        dx = pd.read_csv("Stocksim/plot/data/{}.csv".format(self.name),header=None,index_col=0,skiprows=self.eline-1,nrows=ndays)
-        dx.index=pd.to_datetime(dx.index, format='%Y-%m-%d')
-        dx.index.name=None
-        dx.columns = ["Open","High","Low","Close","Volume"]
-        dx["D"] = dx["Close"]-dx["Open"]
-        dx["D%"] = dx["D"]/dx["Open"]*100
-        dx["height"] = dx["High"]-dx["Low"]
-        self.data = pd.concat([self.data,dx],axis=0).iloc[ndays:]
-        self.sline+=1
-        self.eline+=1
+    # def movedays(self, ndays):
+    #     dx = pd.read_csv("Stocksim/plot/data/{}.csv".format(self.name),header=None,index_col=0,skiprows=self.eline-1,nrows=ndays)
+    #     dx.index=pd.to_datetime(dx.index, format='%Y-%m-%d')
+    #     dx.index.name=None
+    #     dx.columns = ["Open","High","Low","Close","Volume"]
+    #     dx["D"] = dx["Close"]-dx["Open"]
+    #     dx["D%"] = dx["D"]/dx["Open"]*100
+    #     dx["height"] = dx["High"]-dx["Low"]
+    #     self.data = pd.concat([self.data,dx],axis=0).iloc[ndays:]
+    #     self.sline+=1
+    #     self.eline+=1
 
-    def nextday(self):
-        self.movedays(1)
+    # def nextday(self):
+    #     self.movedays(1)
     
     
 if __name__ == "__main__":
-    test=tradable("AAPL",datetime.date(2000,1,15), 21)
+    test=tradable("AAPL",datetime.date(2000,1,15), 21, False, False)
     enddate = test.data.index
     print(enddate)
