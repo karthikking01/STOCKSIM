@@ -21,6 +21,7 @@ import customtkinter as ctk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from datetime import datetime, timedelta
+import sys
 
 xcode = "KO"
 ddays = 21
@@ -70,7 +71,7 @@ class customcandlestick(ctk.CTkFrame):
         
         sdate = self.trd.data.index[0].date()
         edate = self.trd.data.index[-1].date()
-        self.fig, self.ax = mpf.plot(self.trd.data,title=TR[xcode], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=1.4, panel_ratios=(3,1),tight_layout=True)
+        self.fig, self.ax = mpf.plot(self.trd.data,title=TR[xcode], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=1, panel_ratios=(3,1),tight_layout=True)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         
         self.canvas.draw()
@@ -85,7 +86,7 @@ class customcandlestick(ctk.CTkFrame):
         self.trd = tradable(self.code,ndate,ndays, forward=isforward)
         sdate = self.trd.data.index[0].date()
         edate = self.trd.data.index[-1].date()
-        self.fig, self.ax = mpf.plot(self.trd.data, title=TR[xcode], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=1.4, panel_ratios=(3,1),tight_layout=True)
+        self.fig, self.ax = mpf.plot(self.trd.data, title=TR[xcode], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=1, panel_ratios=(3,1),tight_layout=True)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.draw()
         self.canvas.get_tk_widget().grid(row=0,column=0)
@@ -152,6 +153,8 @@ class UI(ctk.CTk):
             
         def go(date, ndays, isforward=True):
             global xcode, ddays, edate, sdate, bw, tw
+            if date == "exit":
+                self.destroy()
             ddays = ndays
             sdate = datetime.strptime(date, "%d/%m/%Y").date()
             ddays = int(ndays.strip().split(" ")[0])
@@ -195,5 +198,6 @@ class UI(ctk.CTk):
         self.next.place(x=1280-80,y=0)
         self.graphspace.place(x=20+tw, y=48)
 app = UI()
+app.protocol("WM_DELETE_WINDOW", sys.exit)
 app.home()
 app.mainloop()

@@ -79,7 +79,7 @@ def lff(name,sdate:datetime.date,dnrows, forward=True):
 
 def lfw(name):
     """Loads Ticker from Web"""
-    tk = yf.Ticker[TR[name]] # get ticker (YahooFinance module)
+    tk = yf.Ticker(name) # get ticker (YahooFinance module)
     x = pd.DataFrame(tk.history(period="max"))
     x.index = [d.strftime('%Y-%m-%d') for d in x.index.date]
     x = x.drop(columns=["Dividends","Stock Splits"]).loc["2000-01-03":]
