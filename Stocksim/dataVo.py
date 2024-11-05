@@ -3,22 +3,6 @@ import yfinance as yf
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import datetime
 import time
-"""
-1.Astral Blip         (ASBL)
-2.Confiscated Motive  (COMO)
-3.Corrupted Sample    (COSA)
-4.Entropic Echo       (ENEC)
-5.Hidden Trend        (HITR)
-6.House Memory        (HOME)
-7.Intrusive Pattern   (INPA)
-8.Remote Thought      (REMT)
-9.Ritual Impulse      (RITM)
-10.Shaded Facet        (SHFA)
-11.Shifting Fragment   (SHIF)
-12.Threshold Remnant   (THRE)
-13.Undefined Reading   (UNRE)
-14.Untapped Potential  (UNPO)
-"""
 TRDX = {
     "ASBL": "Astral Blip",
     "COMO": "Confiscated Motive",
@@ -52,6 +36,24 @@ TRD = {
     "UNRE": "UNH",
     "UNPO": "ORCL"
 }
+
+TR = {
+    "AAPL": "APPLE Inc.",
+    "NVDA": "NVIDIA Corp.",
+    "MSFT": "Microsoft Corp.",
+    "AXP": "American Express Co.",
+    "AMZN": "Amazon.com Inc.",
+    "KO": "The Coca-Cola Co.",
+    "LLY": "Eli Lilly and Co.",
+    "INTC": "Intel Corp.",
+    "WMT": "Walmart Inc.",
+    "JPM": "JPMorgan Chase & Co.",
+    "IBM": "IBM Corp.",
+    "XOM": "Exxon Mobil Corp.",
+    "UNH": "UnitedHealth Group Inc.",
+    "ORCL": "Oracle Corp."
+}
+
 def lff(name,sdate:datetime.date,dnrows, forward=True):
     """Loads Data from file ranging from sdate to sdate+dnrows"""
     with open("Stocksim/plot/data/{}.csv".format(name), "r") as f:
@@ -77,7 +79,7 @@ def lff(name,sdate:datetime.date,dnrows, forward=True):
 
 def lfw(name):
     """Loads Ticker from Web"""
-    tk = yf.Ticker(TRD[name]) # get ticker (YahooFinance module)
+    tk = yf.Ticker(name) # get ticker (YahooFinance module)
     x = pd.DataFrame(tk.history(period="max"))
     x.index = [d.strftime('%Y-%m-%d') for d in x.index.date]
     x = x.drop(columns=["Dividends","Stock Splits"]).loc["2000-01-03":]
@@ -88,13 +90,14 @@ class tradable:
     data = None
     def __init__(self, name, sdate, dnrows, lastday = False, forward=True):
         self.name = name
-        if name in TRDX:
+        if name in TR:
             self.forward = forward
             self.ld = lastday
             self.dnrows = dnrows
-            self.ticker = TRD[name]
+            self.ticker = TR[name]
             self.sdate = sdate
             self.data = None
+            self.sline = None
         
             try:
                 if self.ld == False:
@@ -111,7 +114,7 @@ class tradable:
                     self.data = self.data.tail(1)
             self.eline = self.sline+dnrows
         else:
-            raise ValueError("Invalid Name: {} is not a valid Material REFER TO TRD".format(self.name))
+            raise ValueError("Invalid Name: {} is not a valid Ticker REFER TO TRD".format(name))
     
     # def movedays(self, ndays):
     #     dx = pd.read_csv("Stocksim/plot/data/{}.csv".format(self.name),header=None,index_col=0,skiprows=self.eline-1,nrows=ndays)
@@ -128,7 +131,8 @@ class tradable:
     # def nextday(self):
     #     self.movedays(1)
     
+    
 if __name__ == "__main__":
-    test=tradable("ASBL",datetime.date(2000,1,15), 21, True, False)
-    enddate = test.data
+    test=tradable("AAPL",datetime.date(2000,1,15), 21, False, False)
+    enddate = test.data.index
     print(enddate)
