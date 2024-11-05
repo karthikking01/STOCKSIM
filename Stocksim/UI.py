@@ -171,9 +171,6 @@ class UI(ctk.CTk):
             self.btndict[i]= tab(self.leftframe, i, self.lddict[i]["Close"].round(1).values[0], self.lddict[i]["D%"].round(1).values[0])
         for i in self.btndict:
             self.btndict[i].pack(anchor="w", pady=(0,1))
-        
-        self.topbar = ctk.CTkFrame(self, width=1280-60-2*tw,height=48,fg_color="#0ff")
-        for i in self.btndict:
             self.btndict[i].tradbutton.configure(command=partial(view, i))
         
         self.topbar = ctk.CTkFrame(self, width=1280-60-2*tw,height=48,fg_color="#0ff")
