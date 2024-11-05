@@ -63,7 +63,6 @@ class customcandlestick(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
         global xcode, ddays, edate, sdate, bw, tw
-        print(xcode)
         self.date = sdate
         self.ndays = ddays
         self.trd = tradable(xcode,self.date,ddays)
