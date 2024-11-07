@@ -27,7 +27,7 @@ xcode = "COMO"
 ddays = 21
 sdate = datetime(2023,2,4).date()
 edate = None
-bw = 150
+bw = 110
 tw = (bw*2)+48
 
 binance_dark = {
@@ -77,11 +77,12 @@ class customcandlestick(ctk.CTkFrame):
         self.canvas.get_tk_widget()
         self.canvas.get_tk_widget().grid(row=0,column=0)
 
-    def upd(self, ncode=xcode, ndate=sdate, ndays=ddays, isforward=True):
+    def upd(self, ndate=sdate, ndays=ddays, isforward=True):
         global xcode, ddays, edate, sdate, bw, tw
+        print(xcode)
         plt.close()
         del self.fig, self.ax, self.canvas, self.trd
-        self.code = ncode
+        self.code = xcode
         self.trd = tradable(self.code,ndate,ndays, forward=isforward)
         sdate = self.trd.data.index[0].date()
         edate = self.trd.data.index[-1].date()
@@ -142,15 +143,23 @@ class UI(ctk.CTk):
         
         def Trade(Tcode):
             global xcode, ddays, edate, sdate, bw, tw
+            del xcode
+            xcode = Tcode
+            print(xcode)
             for i in self.btndict:
                 if i == Tcode:
                     self.btndict[i].tradbutton.configure(state="disabled")
                 else:
                     self.btndict[i].tradbutton.configure(state="normal")
-            del xcode
-            xcode = Tcode
-            self.graphspace.upd(ncode=xcode, ndate=sdate, ndays=ddays)
+            self.trf_name.configure(text=TRDX[Tcode])
+            self.trf_code.configure(text=Tcode)
+            self.trf_curr.configure(text=str(self.lddict[Tcode]["Close"].round(1).values[0]))
+            self.trf_d.configure(text=str(self.lddict[Tcode]["D"].round(1).values[0])+" USD")
+            self.trf_dperc.configure(text=str(self.lddict[Tcode]["D%"].round(1).values[0])+"%")
+
+            self.graphspace.upd(ndate=sdate, ndays=ddays)
             self.currd.configure(text="Curently Displaying: {} thru {}".format(sdate, edate))
+
         
         def go(date, ndays, isforward=True):
             global xcode, ddays, edate, sdate, bw, tw
@@ -197,29 +206,34 @@ class UI(ctk.CTk):
             self.btndict[i].tradbutton.configure(command=partial(Trade, i))
             self.btndict[i].pack(anchor="w")
         
+        self.graphspace = customcandlestick(self)
+        
         self.topbar = ctk.CTkFrame(self, width=1280-60-2*tw,height=48,fg_color="#0ff")
         self.currd = ctk.CTkLabel(self,text="Curently Displaying: {} thru {}".format(sdate, edate), fg_color="#000", width=tw//2+2, height=6, anchor="w",padx=5)
         self.toprightframe = ctk.CTkFrame(self, width=tw, height=360, corner_radius=0, fg_color="#000",border_color="#000",border_width=5)
-        self.trf_name = ctk.CTkLabel(self.toprightframe, text="Name",width=tw, height=24,anchor="w", bg_color="#000",pady=10,padx=5)
-        self.trf_code = ctk.CTkLabel(self.toprightframe, font=("Helvetica",18),text="Code", width=tw ,height=24,anchor="w", bg_color="#000",pady=10, padx=5)
-        self.trf_curr = ctk.CTkLabel(self.toprightframe,text="Curr", font=("Helvetica",40,"bold"),width=tw//2 ,height=48,anchor="w", bg_color="#000",pady=10,padx=5)
-        self.trf_d = ctk.CTkLabel(self.toprightframe,text="D",width=tw//2 ,height=24,anchor="e", bg_color="#000",pady=10,padx=5)
-        self.trf_dperc = ctk.CTkLabel(self.toprightframe,text="D%",width=tw//2 ,height=24,anchor="e", bg_color="#000",pady=10,padx=5)
+        self.trf_name = ctk.CTkLabel(self.toprightframe, text=TRDX[xcode],width=tw, height=24,anchor="w", bg_color="#000",pady=10,padx=5)
+        self.trf_code = ctk.CTkLabel(self.toprightframe, font=("Helvetica",18),text=xcode, width=tw ,height=24,anchor="w", bg_color="#000",pady=10, padx=5)
+        self.trf_curr = ctk.CTkLabel(self.toprightframe,text=str(self.lddict[xcode]["Close"].round(1).values[0]), font=("Helvetica",40,"bold"),width=tw//2 ,height=48,anchor="w", bg_color="#000",pady=10,padx=5)
+        self.trf_d = ctk.CTkLabel(self.toprightframe,text=str(self.lddict[xcode]["D"].round(1).values[0])+" USD",width=tw//2 ,height=24,anchor="e", bg_color="#000",pady=10,padx=5)
+        self.trf_dperc = ctk.CTkLabel(self.toprightframe,text=str(self.lddict[xcode]["D%"].round(1).values[0])+"%",width=tw//2 ,height=24,anchor="e", bg_color="#000",pady=10,padx=5)
         self.buy = ctk.CTkButton(self.toprightframe, text="Buy", width=tw//2, height=48, command=buy)
         self.sell = ctk.CTkButton(self.toprightframe, text="Sell", width=tw//2, height=48, command=sell)
         self.entry = ctk.CTkEntry(self.toprightframe, width=tw//2, height=24, placeholder_text="Enter Units")
         
         self.aag = ctk.CTkLabel(self.toprightframe, text="At A Glance DD/MM/YYYY", fg_color="#000", width=tw, height=24)
         self.lopen = ctk.CTkLabel(self.toprightframe, text="Open", fg_color="#000", width=tw//2, height=24, anchor="w", padx=5)
-        self.lopenv = ctk.CTkLabel(self.toprightframe, text="$Open", fg_color="#000", width=tw//2, height=24, anchor="w")
         self.lhigh = ctk.CTkLabel(self.toprightframe, text="High", fg_color="#000", width=tw//2, height=24, anchor="w",padx=5)
-        self.lhighv = ctk.CTkLabel(self.toprightframe, text="$High", fg_color="#000", width=tw//2, height=24, anchor="w")
         self.llow = ctk.CTkLabel(self.toprightframe, text="Low", fg_color="#000", width=tw//2, height=24, anchor="w",padx=5)
-        self.llowv = ctk.CTkLabel(self.toprightframe, text="$Low", fg_color="#000", width=tw//2, height=24, anchor="w")
         self.lclose = ctk.CTkLabel(self.toprightframe, text="Close", fg_color="#000", width=tw//2, height=24, anchor="w",padx=5)
-        self.lclosev = ctk.CTkLabel(self.toprightframe, text="$Close", fg_color="#000", width=tw//2, height=24, anchor="w")
         self.lshares = ctk.CTkLabel(self.toprightframe, text="Shares",justify="center", fg_color="#000", width=tw//2, height=24)
         self.lnetval = ctk.CTkLabel(self.toprightframe, text="Net Value",justify="center", fg_color="#000", width=tw//2, height=24)
+        
+        self.lopenv = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Open"].round(1).values[0], fg_color="#000", width=tw//2, height=24, anchor="w")
+        self.lhighv = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["High"].round(1).values[0], fg_color="#000", width=tw//2, height=24, anchor="w")
+        self.llowv = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Low"].round(1).values[0], fg_color="#000", width=tw//2, height=24, anchor="w")
+        self.lclosev = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Close"].round(1).values[0], fg_color="#000", width=tw//2, height=24, anchor="w")
+    
+    
         self.shares = ctk.CTkLabel(self.toprightframe, text="$Shares", fg_color="#000",justify="center", width=tw//2, height=48)
         self.netval = ctk.CTkLabel(self.toprightframe, text="$Net Value", fg_color="#000",justify="center", width=tw//2, height=48)
         self.prev = ctk.CTkButton(self,text="<",font=("Helvetica",30,"bold"),width=28,height=34,corner_radius=1024, command= lambda: go(date = (sdate-timedelta(days=1)).strftime('%d/%m/%Y'), ndays = str(ddays)+" Days", isforward=False))
@@ -229,7 +243,6 @@ class UI(ctk.CTk):
         
         self.iconframe = ctk.CTkFrame(self,fg_color="gray", width=60, height=720, corner_radius=0)
         
-        self.graphspace = customcandlestick(self)
         
         # print(self.btndict)
         self.btndict["ASBL"].tradbutton.configure(state="disabled")
@@ -261,8 +274,8 @@ class UI(ctk.CTk):
         self.topbar.place(x=60+tw,y=0)
         self.toprightframe.place(x=1280-tw,y=0)
         self.botrightframe.place(x=1280-tw,y=390)
-        self.prev.place(x=1280-136,y=0)
-        self.next.place(x=1280-80,y=0)
+        # self.prev.place(x=1280-500,y=0)
+        # self.next.place(x=1280-80-500,y=0)
         
     def next_day(self):
         global date
