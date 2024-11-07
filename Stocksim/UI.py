@@ -77,12 +77,12 @@ class customcandlestick(ctk.CTkFrame):
         self.canvas.get_tk_widget()
         self.canvas.get_tk_widget().grid(row=0,column=0)
         
-    def upd(self, ncode=xcode, ndate=sdate, ndays=ddays, isforward=True):
+    def upd(self, ndate=sdate, ndays=ddays, isforward=True):
         global xcode, ddays, edate, sdate, bw, tw
+        print(xcode)
         plt.close()
         del self.fig, self.ax, self.canvas, self.trd
-        self.code = ncode
-        self.trd = tradable(self.code,ndate,ndays, forward=isforward)
+        self.trd = tradable(xcode,ndate,ndays, forward=isforward)
         sdate = self.trd.data.index[0].date()
         edate = self.trd.data.index[-1].date()
         self.fig, self.ax = mpf.plot(self.trd.data, title=TR[xcode], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=1, panel_ratios=(3,1),tight_layout=True)
@@ -140,14 +140,15 @@ class UI(ctk.CTk):
         
         def view(Tcode):
             global xcode, ddays, edate, sdate, bw, tw
+            del xcode
+            xcode = Tcode
             for i in self.btndict:
                 if i == Tcode:
                     self.btndict[i].tradbutton.configure(state="disabled",text="O")
                 else:
                     self.btndict[i].tradbutton.configure(state="normal", text="View")
-            del xcode
-            xcode = Tcode
-            self.graphspace.upd(ncode=xcode, ndate=sdate, ndays=ddays)
+            print(xcode)
+            self.graphspace.upd(ndate=sdate, ndays=ddays)
             self.currd.configure(text="Curently Displaying: {} thru {}".format(sdate, edate))
             
         def go(date, ndays, isforward=True):
