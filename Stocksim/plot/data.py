@@ -52,6 +52,18 @@ TRD = {
     "UNRE": "UNH",
     "UNPO": "ORCL"
 }
+
+def chk_usr_pwd(usr,pwd):
+    x = pd.read_csv("Stocksim/plot/data/userdata.csv", index_col=0)
+    # print(x[x["usr"]==usr]["pwd"].values[0])
+    if usr in x.index:
+        if x.loc[usr,"pwd"]==pwd:
+            return (200, x.loc[usr,"liq"])
+        else:
+            return (401,None)
+    else:
+        return (400,None)
+
 def lff(name,sdate:datetime.date,dnrows, forward=True):
     """Loads Data from file ranging from sdate to sdate+dnrows"""
     with open("Stocksim/plot/data/{}.csv".format(name), "r") as f:
@@ -128,7 +140,30 @@ class tradable:
     # def nextday(self):
     #     self.movedays(1)
     
+class ledger():
+    def __init__(self, file, *args, **kwargs):
+        import pandas as pd
+        self.data = pd.read_csv(file,header=None,names=["date","user","token","price","qty","amt"],index_col=0)
+        self.last_index = self.data.index[-1]
+    def txn(self, date:datetime.date ,user:str ,token:str ,price:float, qty:float):
+        amt = price*qty
+        txn = pd.DataFrame({"date":date,"user":user,"token":token,"price":price,"qty":qty,"amt":amt},index=[self.last_index+1])
+        self.data = pd.concat([self.data,txn],axis=0)
+        self.last_index+=1
+        return amt
+    
+    def fetch_user_data(self,user:str):
+        return self.data[self.data["user"]==user]
+
+    def fetch_token_data(self,user:str, token:str):
+        return self.data[(self.data["user"]==user) & (self.data["token"]==token)]
+
 if __name__ == "__main__":
-    test=tradable("ASBL",datetime.date(2000,1,15), 21, True, False)
-    enddate = test.data
-    print(enddate)
+    test=tradable("ASBL",datetime.date(2000,1,15), 21, False, False)
+    x = test.data
+    print(x)
+    l = ledger(file="Stocksim/plot/data/ledger.csv")
+    l.txn(datetime.date(2000,1,15),"user1","ASBL",100,1)
+    l.txn(datetime.date(2000,1,15),"user1","ASBL",100,-1)
+    print(l.fetch_token_data("user1","ASBL"))
+    print(l.data)
