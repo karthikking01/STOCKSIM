@@ -13,7 +13,7 @@ k) at every 10 second update the price according to the data (ie simulate actual
 
 www.16colo.rs
 """
-from plot.data import TR, TRD, TRDX
+from dataVo import TR, TRD, TRDX
 from plot.data import tradable
 import mplfinance as mpf
 from functools import partial

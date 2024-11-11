@@ -1,5 +1,6 @@
 import pandas as pd
 import yfinance as yf
+import pandas_datareader.data as pdr
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import datetime
 import time
@@ -53,12 +54,14 @@ TRD = {
     "UNPO": "ORCL"
 }
 
+
 def chk_usr_pwd(usr,pwd):
     x = pd.read_csv("Stocksim/plot/data/userdata.csv", index_col=0)
     # print(x[x["usr"]==usr]["pwd"].values[0])
+    print(x)
     if usr in x.index:
-        if x.loc[usr,"pwd"]==pwd:
-            return (200, x.loc[usr,"liq"])
+        if pd.Series(x.loc[usr]["pwd"]).iloc[-1] == pwd:
+            return (200, pd.Series(x.loc[usr]["liq"]).iloc[-1])
         else:
             return (401,None)
     else:
@@ -125,30 +128,17 @@ class tradable:
         else:
             raise ValueError("Invalid Name: {} is not a valid Material REFER TO TRD".format(self.name))
     
-    # def movedays(self, ndays):
-    #     dx = pd.read_csv("Stocksim/plot/data/{}.csv".format(self.name),header=None,index_col=0,skiprows=self.eline-1,nrows=ndays)
-    #     dx.index=pd.to_datetime(dx.index, format='%Y-%m-%d')
-    #     dx.index.name=None
-    #     dx.columns = ["Open","High","Low","Close","Volume"]
-    #     dx["D"] = dx["Close"]-dx["Open"]
-    #     dx["D%"] = dx["D"]/dx["Open"]*100
-    #     dx["height"] = dx["High"]-dx["Low"]
-    #     self.data = pd.concat([self.data,dx],axis=0).iloc[ndays:]
-    #     self.sline+=1
-    #     self.eline+=1
-
-    # def nextday(self):
-    #     self.movedays(1)
-    
 class ledger():
-    def __init__(self, file, *args, **kwargs):
+    def __init__(self, file):
+        self.file = file
         import pandas as pd
-        self.data = pd.read_csv(file,header=None,names=["date","user","token","price","qty","amt"],index_col=0)
-        self.last_index = self.data.index[-1]
+        self.data = pd.read_csv(file,header=None,names=["date","user","token","price","qty","amt"],dtype={"user":str,"token":str,"price":float,"qty":float,"amt":float},index_col=0)
+        self.last_index = self.data.index.max()
+
     def txn(self, date:datetime.date ,user:str ,token:str ,price:float, qty:float):
         amt = price*qty
         txn = pd.DataFrame({"date":date,"user":user,"token":token,"price":price,"qty":qty,"amt":amt},index=[self.last_index+1])
-        self.data = pd.concat([self.data,txn],axis=0)
+        self.data = pd.concat([txn,self.data],axis=0)
         self.last_index+=1
         return amt
     
@@ -158,6 +148,9 @@ class ledger():
     def fetch_token_data(self,user:str, token:str):
         return self.data[(self.data["user"]==user) & (self.data["token"]==token)]
 
+    def save_to_csv(self):
+        self.data.to_csv(self.file,header=False)
+    
 if __name__ == "__main__":
     test=tradable("ASBL",datetime.date(2000,1,15), 21, False, False)
     x = test.data
@@ -165,5 +158,5 @@ if __name__ == "__main__":
     l = ledger(file="Stocksim/plot/data/ledger.csv")
     l.txn(datetime.date(2000,1,15),"user1","ASBL",100,1)
     l.txn(datetime.date(2000,1,15),"user1","ASBL",100,-1)
-    print(l.fetch_token_data("user1","ASBL"))
-    print(l.data)
+    token_data=l.fetch_token_data("user1","ASBL")
+    print(token_data)
