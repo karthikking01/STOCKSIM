@@ -39,6 +39,8 @@ pwd = "admin"
 liq = None
 tasv = round(xledger.fetch_user_data(usr)["amt"].sum(),2)
 tval = None
+time = 1000
+
 
 
 def save():
@@ -150,6 +152,7 @@ class UI(ctk.CTk):
         global xcode, ddays, edate, sdate, bw, tw, tasv
         super().__init__()
         self.title("StockSim")
+        self.configure(fg_color="#0b1015")
         x = (self.winfo_screenwidth()-1280)//2
         y = (self.winfo_screenheight()-720)//2
         self.resizable(False, False)
@@ -159,7 +162,6 @@ class UI(ctk.CTk):
         self.iconframe = ctk.CTkFrame(self,fg_color="gray", width=60, height=720, corner_radius=0)
         self.homeicon = ctk.CTkButton(self.iconframe, text="home",height=60,width=60,command=self.home)
         self.portficon = ctk.CTkButton(self.iconframe, text="p",height=60,width=60,command=self.portf)
-        
         # self.wm_attributes("-alpha","0.9")
     
     def login(self):
@@ -245,7 +247,7 @@ class UI(ctk.CTk):
                     self.btndict[i].tradbutton.configure(state="normal")
             self.trf_name.configure(text=TRDX[Tcode])
             self.trf_code.configure(text=Tcode)
-            self.trf_curr.configure(text=str(self.lddict[Tcode]["Close"].iloc[0].round(3)))
+            self.trf_curr.configure(text="$ "+str(self.lddict[Tcode]["Close"].iloc[0].round(3)))
             self.trf_d.configure(text=str(self.lddict[Tcode]["D"].iloc[0].round(3))+" USD")
             self.trf_dperc.configure(text=str(self.lddict[Tcode]["D%"].iloc[0].round(3))+"%")
             if self.tokenledger.empty > 0:
@@ -274,25 +276,28 @@ class UI(ctk.CTk):
             self.currd.configure(text="Curently Displaying: {} thru {}".format(sdate, edate))
 
         def buy():
-            self.buy.configure(height=24,text="Confirm?", command=partial(confirm, "buy"))
+            self.buy.configure(height=24,text="Confirm?",font=("Helvetica",15,"bold"), command=partial(confirm, "buy"))
             self.entry.grid(row=4,column=0,rowspan=1,columnspan=1)
             self.buy.grid_configure(row=5,column=0,rowspan=1,columnspan=1)
             self.sell.configure(text="Cancel",command=cancel)
         def sell():
-            self.sell.configure(height=24, text="Confirm?", command=partial(confirm, "sell"))
+            self.sell.configure(height=24, text="Confirm?",font=("Helvetica",15,"bold"), command=partial(confirm, "sell"))
             self.entry.grid(row=4,column=1,rowspan=1,columnspan=1)
             self.sell.grid_configure(row=5,column=1,rowspan=1,columnspan=1)
             self.buy.configure(text="Cancel",command=cancel)
         def confirm(what):
-            self.buy.configure(text="Buy", command=buy,height=48)
-            self.sell.configure(text="Sell", command=sell,height=48)
+            self.buy.configure(text="Buy",font=("Helvetica",25,"bold"), command=buy,height=48)
+            self.sell.configure(text="Sell",font=("Helvetica",25,"bold"), command=sell,height=48)
             self.entry.grid_forget()
             self.buy.grid_configure(row=4,column=0,rowspan=2,columnspan=1)
             self.sell.grid_configure(row=4,column=1,rowspan=2,columnspan=1)
             nstock = self.entry.get()
             
-            try: float(nstock)
-            except: mb.showerror(title="Error", message="Enter a valid quantity", icon="info", type=mb.OK)
+            try: 
+                float(nstock)
+            except: 
+                mb.showerror(title="Error", message="Enter a valid quantity", icon="info", type=mb.OK)
+                return
             
             if float(nstock)>0:
                 if what == "buy":
@@ -310,8 +315,8 @@ class UI(ctk.CTk):
             else:
                 mb.showerror(title="Error", message="Enter a valid quantity", icon="info", type=mb.OK)
         def cancel():
-            self.buy.configure(text="Buy", command=buy,height=48)
-            self.sell.configure(text="Sell", command=sell,height=48)
+            self.buy.configure(text="Buy",font=("Helvetica",25,"bold"), command=buy,height=48)
+            self.sell.configure(text="Sell",font=("Helvetica",25,"bold"), command=sell,height=48)
             self.entry.grid_forget()
             self.buy.grid_configure(row=4,column=0,rowspan=2,columnspan=1)
             self.sell.grid_configure(row=4,column=1,rowspan=2,columnspan=1)
@@ -357,10 +362,10 @@ class UI(ctk.CTk):
             botrightfill()
             
             
-        self.leftframe = ctk.CTkFrame(self, width=tw, height=720, corner_radius=0,fg_color="#cbcbcb")
+        self.leftframe = ctk.CTkFrame(self, width=tw, height=720, corner_radius=0,fg_color="#2d303e")
         self.tlable = ctk.CTkLabel(self.leftframe, text="Tradables",height=48, width=tw+2, font=("Arial", 20),bg_color="#2b2b2b").pack()
         for i in TRDX:
-            self.btndict[i]= tab(self.leftframe, i, self.lddict[i]["Close"].iloc[0].round(1), self.lddict[i]["D%"].iloc[0].round(1))
+            self.btndict[i]= tab(self.leftframe, i, self.lddict[i]["Close"].iloc[0].round(3), self.lddict[i]["D%"].iloc[0].round(1))
         for i in self.btndict:
             self.btndict[i].tradbutton.configure(command=partial(Trade, i))
             self.btndict[i].pack(anchor="w",pady=(0,1))
@@ -379,32 +384,32 @@ class UI(ctk.CTk):
         
         self.currd = ctk.CTkLabel(self,text="Curently Displaying: {} thru {}".format(sdate, edate), fg_color="#000", width=rfw//2+2, height=6, anchor="w",padx=5)
         
-        self.toprightframe = ctk.CTkFrame(self, width=rfw, height=360, corner_radius=0,border_color="#000",border_width=5)
-        self.trf_name = ctk.CTkLabel(self.toprightframe, text=TRDX[xcode],width=rfw, height=24,anchor="w", bg_color="#000",pady=10,padx=5)
-        self.trf_code = ctk.CTkLabel(self.toprightframe, font=("Helvetica",18),text=xcode, width=rfw ,height=24,anchor="w", bg_color="#000",pady=10, padx=5)
-        self.trf_curr = ctk.CTkLabel(self.toprightframe,text=str(self.lddict[xcode]["Close"].iloc[0].round(3)), font=("Helvetica",40,"bold"),width=rfw//2 ,height=48,anchor="w", bg_color="#000",pady=10,padx=5)
-        self.trf_d = ctk.CTkLabel(self.toprightframe,text=str(self.lddict[xcode]["D"].iloc[0].round(3))+" USD",width=rfw//2 ,height=24,anchor="e", bg_color="#000",pady=10,padx=5)
-        self.trf_dperc = ctk.CTkLabel(self.toprightframe,text=str(self.lddict[xcode]["D%"].iloc[0].round(3))+"%",width=rfw//2 ,height=24,anchor="e", bg_color="#000",pady=10,padx=5)
-        self.buy = ctk.CTkButton(self.toprightframe, text="Buy", width=rfw//2, height=48, command=buy)
-        self.sell = ctk.CTkButton(self.toprightframe, text="Sell", width=rfw//2, height=48, command=sell)
+        self.toprightframe = ctk.CTkFrame(self, width=rfw, height=360, corner_radius=0,fg_color="#2d303e")
+        self.trf_name = ctk.CTkLabel(self.toprightframe, text=TRDX[xcode],width=rfw, height=24,anchor="w", bg_color="#0d1016",pady=10,padx=5)
+        self.trf_code = ctk.CTkLabel(self.toprightframe, font=("Helvetica",15),text=xcode, width=rfw ,height=24,anchor="w", bg_color="#151928",pady=10, padx=5)
+        self.trf_curr = ctk.CTkLabel(self.toprightframe,text="$ "+str(self.lddict[xcode]["Close"].iloc[0].round(3)), font=("Helvetica",30,"bold"),width=rfw//2 ,height=48,anchor="w", bg_color="#212533",pady=18,padx=5)
+        self.trf_d = ctk.CTkLabel(self.toprightframe,text=str(self.lddict[xcode]["D"].iloc[0].round(3))+" USD",width=rfw//2 ,height=24,anchor="e", bg_color="#212533",pady=10,padx=5)
+        self.trf_dperc = ctk.CTkLabel(self.toprightframe,text=str(self.lddict[xcode]["D%"].iloc[0].round(3))+"%",width=rfw//2 ,height=24,anchor="e", bg_color="#212533",pady=10,padx=5)
+        self.buy = ctk.CTkButton(self.toprightframe, text="Buy",font=("Helvetica",35,"bold"), width=rfw//2,fg_color="#1f9358", height=48, command=buy)
+        self.sell = ctk.CTkButton(self.toprightframe, text="Sell",font=("Helvetica",35,"bold"), width=rfw//2,fg_color="#e04d5c", height=48, command=sell)
         self.entry = ctk.CTkEntry(self.toprightframe, width=rfw//2, height=24, placeholder_text="Enter Units")
         
-        self.aag = ctk.CTkLabel(self.toprightframe, text="At A Glance {}".format(edate), fg_color="#000", width=rfw, height=24)
-        self.lopen = ctk.CTkLabel(self.toprightframe, text="Open", fg_color="#000", width=rfw//2, height=24, anchor="w", padx=5)
-        self.lhigh = ctk.CTkLabel(self.toprightframe, text="High", fg_color="#000", width=rfw//2, height=24, anchor="w",padx=5)
-        self.llow = ctk.CTkLabel(self.toprightframe, text="Low", fg_color="#000", width=rfw//2, height=24, anchor="w",padx=5)
-        self.lclose = ctk.CTkLabel(self.toprightframe, text="Close", fg_color="#000", width=rfw//2, height=24, anchor="w",padx=5)
-        self.lshares = ctk.CTkLabel(self.toprightframe, text="Shares",justify="center", fg_color="#000", width=rfw//2, height=24)
-        self.lnetval = ctk.CTkLabel(self.toprightframe, text="Net Value",justify="center", fg_color="#000", width=rfw//2, height=24)
+        self.aag = ctk.CTkLabel(self.toprightframe, text="At A Glance {}".format(edate), fg_color="#0d1017", width=rfw, height=24)
+        self.lopen = ctk.CTkLabel(self.toprightframe, text="Open", fg_color="#1d2950", width=rfw//2, height=24, padx=5)
+        self.lhigh = ctk.CTkLabel(self.toprightframe, text="High", fg_color="#161929", width=rfw//2, height=24,padx=5)
+        self.llow = ctk.CTkLabel(self.toprightframe, text="Low", fg_color="#1d2950", width=rfw//2, height=24,padx=5)
+        self.lclose = ctk.CTkLabel(self.toprightframe, text="Close", fg_color="#161929", width=rfw//2, height=24,padx=5)
+        self.lshares = ctk.CTkLabel(self.toprightframe, text="Shares",justify="center", fg_color="#1c2951", width=rfw//2, height=24)
+        self.lnetval = ctk.CTkLabel(self.toprightframe, text="Net Value",justify="center", fg_color="#142e61", width=rfw//2, height=24)
         
-        self.lopenv = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Open"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24, anchor="w")
-        self.lhighv = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["High"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24, anchor="w")
-        self.llowv = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Low"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24, anchor="w")
-        self.lclosev = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Close"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24, anchor="w")
+        self.lopenv = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Open"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24)
+        self.lhighv = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["High"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24)
+        self.llowv = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Low"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24)
+        self.lclosev = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Close"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24)
     
     
-        self.shares = ctk.CTkLabel(self.toprightframe, text="$Shares", fg_color="#000",justify="center", width=rfw//2, height=48)
-        self.netval = ctk.CTkLabel(self.toprightframe, text="$Net Value", fg_color="#000",justify="center", width=rfw//2, height=48)
+        self.shares = ctk.CTkLabel(self.toprightframe, text="$Shares", fg_color="#1c2951",justify="center", width=rfw//2, height=48)
+        self.netval = ctk.CTkLabel(self.toprightframe, text="$Net Value", fg_color="#142e61",justify="center", width=rfw//2, height=48)
         
         if self.tokenledger.empty > 0:
             self.shares.configure(text="0")
@@ -419,31 +424,31 @@ class UI(ctk.CTk):
         # self.next = ctk.CTkButton(self,text=">",font=("Helvetica",30,"bold"),width=28,height=34,corner_radius=1024, command= lambda: go(date = (sdate+timedelta(days=1)).strftime('%d/%m/%Y'), ndays = str(ddays)+" Days"))
         
         rbw = tw+20
-        self.botrightframe = ctk.CTkFrame(self, width=rbw, height=360, corner_radius=0, fg_color="#151928",border_color="#fff",border_width=1)
+        self.botrightframe = ctk.CTkFrame(self, width=rbw, height=300, corner_radius=0, fg_color="#151928",border_color="#fff",border_width=1)
         self.botrightscrollable = ctk.CTkScrollableFrame(self.botrightframe, width=rbw, height=360, corner_radius=0, fg_color="#151928")        
         botrightfill()
         self.botrightscrollable.pack()
-        self.botrightframe.place(x=1280-tw-40,y=370)
+        self.botrightframe.place(x=1280-tw-40,y=400)
         
         self.btndict["ASBL"].tradbutton.configure(state="disabled")
         self.trf_name.grid(row=0,column=0, columnspan=2, rowspan=1)
         self.trf_code.grid(row=1,column=0, columnspan=2, rowspan=1)
-        self.trf_curr.grid(row=2,column=0,columnspan=1, rowspan=2)
-        self.trf_d.grid(row=2,column=1,columnspan=1, rowspan=1)
+        self.trf_curr.grid(row=2,column=0,columnspan=1, rowspan=2, padx=(0,1))
+        self.trf_d.grid(row=2,column=1,columnspan=1, rowspan=1, pady=(0,1))
         self.trf_dperc.grid(row=3,column=1,columnspan=1, rowspan=1)
-        self.buy.grid(row=4,column=0,columnspan=1, rowspan=2)
-        self.sell.grid(row=4,column=1,columnspan=1, rowspan=2)
-        self.aag.grid(row=6,column=0,columnspan=2, rowspan=1)
-        self.lopen.grid(row=7,column=0,columnspan=1, rowspan=1)
-        self.lopenv.grid(row=7,column=1,columnspan=1, rowspan=1)
-        self.lhigh.grid(row=8,column=0,columnspan=1, rowspan=1)
-        self.lhighv.grid(row=8,column=1,columnspan=1, rowspan=1)
-        self.llow.grid(row=9,column=0,columnspan=1, rowspan=1)
-        self.llowv.grid(row=9,column=1,columnspan=1, rowspan=1)
-        self.lclose.grid(row=10,column=0,columnspan=1, rowspan=1)
-        self.lclosev.grid(row=10,column=1,columnspan=1, rowspan=1)
-        self.lshares.grid(row=11,column=0,columnspan=1, rowspan=1)
-        self.lnetval.grid(row=11,column=1,columnspan=1, rowspan=1)
+        self.buy.grid(row=4,column=0,columnspan=1, rowspan=2, pady=(5,0))
+        self.sell.grid(row=4,column=1,columnspan=1, rowspan=2,pady=(5,0))
+        self.aag.grid(row=6,column=0,columnspan=2, rowspan=1, pady=(10,1))
+        self.lopen.grid(row=7,column=0,columnspan=1, rowspan=1, pady=(0,1))
+        self.lopenv.grid(row=7,column=1,columnspan=1, rowspan=1, pady=(0,1))
+        self.lhigh.grid(row=8,column=0,columnspan=1, rowspan=1, pady=(0,1))
+        self.lhighv.grid(row=8,column=1,columnspan=1, rowspan=1, pady=(0,1))
+        self.llow.grid(row=9,column=0,columnspan=1, rowspan=1, pady=(0,1))
+        self.llowv.grid(row=9,column=1,columnspan=1, rowspan=1, pady=(0,1))
+        self.lclose.grid(row=10,column=0,columnspan=1, rowspan=1, pady=(0,1))
+        self.lclosev.grid(row=10,column=1,columnspan=1, rowspan=1, pady=(0,1))
+        self.lshares.grid(row=11,column=0,columnspan=1, rowspan=1, pady=(5,1))
+        self.lnetval.grid(row=11,column=1,columnspan=1, rowspan=1, pady=(5,1))
         self.shares.grid(row=12,column=0,columnspan=1, rowspan=2)
         self.netval.grid(row=12,column=1,columnspan=1, rowspan=2)
         
@@ -453,10 +458,14 @@ class UI(ctk.CTk):
         self.topbar.place(x=60+tw,y=0)
         # self.prev.place(x=1280-500,y=0)
         # self.next.place(x=1280-80-500,y=0)
+        self.updateloop()
 
     def portf(self):
+        global sdate, edate
+        sdate = datetime(2020,1,3).date()
         self.homeicon.configure(state="normal")
         self.portficon.configure(state="disabled")
+
         try:
             self.leftframe.destroy()
             self.botrightframe.destroy()
@@ -466,11 +475,13 @@ class UI(ctk.CTk):
             self.topbar.destroy()
         except:
             pass
-        pw = 1220//6
+        upw = 1220//6
+        lpw = 1220//8
+
         self.portfupperframe = ctk.CTkFrame(self, width=1220, height=360, corner_radius=0, fg_color="#151928",border_color="#fff",border_width=1)
         self.pfuscroll = ctk.CTkScrollableFrame(self.portfupperframe, width=1220-20, height=360, corner_radius=0, fg_color="#151928")
         self.pfuscroll.pack()
-        urow1 = [ctk.CTkLabel(self.pfuscroll, text="Code", width=pw),ctk.CTkLabel(self.pfuscroll, text="Name", width=pw*2),ctk.CTkLabel(self.pfuscroll, text="Units", width=pw),ctk.CTkLabel(self.pfuscroll, text="Current", width=pw),ctk.CTkLabel(self.pfuscroll, text="Profitability", width=pw)]
+        urow1 = [ctk.CTkLabel(self.pfuscroll, text="Code", width=upw),ctk.CTkLabel(self.pfuscroll, text="Name", width=upw*2),ctk.CTkLabel(self.pfuscroll, text="Units", width=upw),ctk.CTkLabel(self.pfuscroll, text="Current", width=upw),ctk.CTkLabel(self.pfuscroll, text="Profitability", width=upw)]
 
         for c,i in enumerate(urow1):
             i.grid(row=0,column=c)
@@ -480,16 +491,38 @@ class UI(ctk.CTk):
             for j in range(5):
                 self.tradabluserdata[i][j].grid(row=i+1,column=j)
         
-        self.portflowerframe = ctk.CTkFrame(self, width=1220, height=360, corner_radius=0, fg_color="#151928",border_color="#fff",border_width=1)
+        self.portflowerframe = ctk.CTkFrame(self, width=1220, height=360, corner_radius=0, fg_color="#fff")
+        self.pflscroll = ctk.CTkScrollableFrame(self.portflowerframe, width=1220-30, height=360, corner_radius=0, fg_color="#151928")
+        self.pflscroll.pack()
         
+        urow2 = [ctk.CTkLabel(self.pflscroll,text="TXN id.",width=lpw),ctk.CTkLabel(self.pflscroll, text="Date",width=lpw),ctk.CTkLabel(self.pflscroll,text="User",width=lpw),ctk.CTkLabel(self.pflscroll,text="Code",width=lpw),ctk.CTkLabel(self.pflscroll,text="Units",width=lpw),ctk.CTkLabel(self.pflscroll,text="Price",width=lpw),ctk.CTkLabel(self.pflscroll,text="Action",width=lpw),ctk.CTkLabel(self.pflscroll,text="Liq Change",width=lpw)]
+
+        for c,i in enumerate(urow2):
+            i.grid(row=0,column=c)
+            
+        self.txndata = [(ctk.CTkLabel(self.pflscroll, text=i),ctk.CTkLabel(self.pflscroll, text=xledger.data['date'].iloc[i]),ctk.CTkLabel(self.pflscroll, text=xledger.data['user'].iloc[i]),ctk.CTkLabel(self.pflscroll, text=xledger.data['token'].iloc[i]),ctk.CTkLabel(self.pflscroll, text=abs(xledger.data['qty'].iloc[i])),ctk.CTkLabel(self.pflscroll, text=xledger.data['price'].iloc[i].round(3)),ctk.CTkLabel(self.pflscroll,text="Buy" if xledger.data['qty'].iloc[i]>0 else "Sell"),ctk.CTkLabel(self.pflscroll,text= (-xledger.data["amt"].iloc[i].round(3)))) for i in xledger.data[xledger.data["user"] == usr].index]
+
+        for i in range(len(self.txndata)):
+            for j in range(8):
+                self.txndata[i][j].grid(row=i+1,column=j)
         
+
+        self.portflowerframe.place(x=60,y=0)
+        self.portflowerframe.place(x=60,y=360)
         
         self.portfupperframe.place(x=60,y=0)
         self.portflowerframe.place(x=60,y=360)
-        
-    
-    def next_day(self):
+
+    def updateloop(self):
+        global sdate
+        print(sdate)
         sdate = sdate + timedelta(days=1)
+        self.graphspace.upd(ndate=sdate)
+        print(sdate)
+        print(edate)
+        print("hi")
+    
+        
 
 
 app = UI()
