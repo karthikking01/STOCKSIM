@@ -1,6 +1,6 @@
 import pandas as pd
 import yfinance as yf
-import pandas_datareader.data as pdr
+# import pandas_datareader.data as pdr
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import datetime
 import time
@@ -56,16 +56,19 @@ TRD = {
 
 
 def chk_usr_pwd(usr,pwd):
-    x = pd.read_csv("Stocksim/plot/data/userdata.csv", index_col=0)
-    # print(x[x["usr"]==usr]["pwd"].values[0])
-    print(x)
-    if usr in x.index:
-        if pd.Series(x.loc[usr]["pwd"]).iloc[-1] == pwd:
-            return (200, pd.Series(x.loc[usr]["liq"]).iloc[-1])
+    try:
+        x = pd.read_csv("Stocksim/plot/data/userdata.csv", index_col=0)
+        # print(x[x["usr"]==usr]["pwd"].values[0])
+        print(x)
+        if usr in x.index:
+            if pd.Series(x.loc[usr]["pwd"]).iloc[-1] == pwd:
+                return (200, pd.Series(x.loc[usr]["liq"]).iloc[-1])
+            else:
+                return (401,None)
         else:
-            return (401,None)
-    else:
-        return (400,None)
+            return (400,None)
+    except:
+        return(400,None)
 
 def lff(name,sdate:datetime.date,dnrows, forward=True):
     """Loads Data from file ranging from sdate to sdate+dnrows"""

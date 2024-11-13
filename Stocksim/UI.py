@@ -91,7 +91,7 @@ class customcandlestick(ctk.CTkFrame):
         
         sdate = self.trd.data.index[0].date()
         edate = self.trd.data.index[-1].date()
-        self.fig, self.ax = mpf.plot(self.trd.data,title=TRDX[xcode], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=1, panel_ratios=(3,1),tight_layout=True)
+        self.fig, self.ax = mpf.plot(self.trd.data,title=TRDX[xcode], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=0.8, panel_ratios=(3,1),tight_layout=False)
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         
@@ -109,7 +109,7 @@ class customcandlestick(ctk.CTkFrame):
         self.trd = tradable(self.code,ndate,ndays, forward=isforward)
         sdate = self.trd.data.index[0].date()
         edate = self.trd.data.index[-1].date()
-        self.fig, self.ax = mpf.plot(self.trd.data, title=TRDX[xcode], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=1, panel_ratios=(3,1),tight_layout=True)
+        self.fig, self.ax = mpf.plot(self.trd.data, title=TRDX[xcode], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=0.8, panel_ratios=(3,1),tight_layout=False)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.draw()
         self.canvas.get_tk_widget().grid(row=0,column=0)
@@ -521,7 +521,6 @@ class UI(ctk.CTk):
         print(sdate)
         print(edate)
         print("hi")
-    
         
 
 
