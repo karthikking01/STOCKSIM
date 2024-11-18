@@ -13,12 +13,12 @@ k) at every 10 second update the price according to the data (ie simulate actual
 
 www.16colo.rs
 """
-from pickle import TRUE
 from plot.data import *
 import mplfinance as mpf
 from functools import partial
 import customtkinter as ctk
 from math import *
+from PIL import Image
 import tkinter.messagebox as mb
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -43,7 +43,7 @@ play = True
 tasv = 0
 tval = None
 
-
+images = {"home":ctk.CTkImage(light_image=Image.open("Stocksim/plot/data/images/home.png"),dark_image=Image.open("Stocksim/plot/data/images/home.png"),size=(25,25)), "pf":ctk.CTkImage(light_image=Image.open("Stocksim/plot/data/images/pf.png"),dark_image=Image.open("Stocksim/plot/data/images/pf.png"),size=(25,25))}
 def save():
     xledger.save_to_csv()
     with open("Stocksim/plot/data/userdata.csv","a") as file:
@@ -160,9 +160,9 @@ class UI(ctk.CTk):
         self.geometry('%dx%d+%d+%d' % (1280, 730, x, y))
         
         self.login()
-        self.iconframe = ctk.CTkFrame(self,fg_color="gray", width=60, height=720, corner_radius=0)
-        self.homeicon = ctk.CTkButton(self.iconframe, text="home",height=60,width=60,command=self.home)
-        self.portficon = ctk.CTkButton(self.iconframe, text="p",height=60,width=60,command=self.portf)
+        self.iconframe = ctk.CTkFrame(self,fg_color="#151928", width=60, height=720, corner_radius=0)
+        self.homeicon = ctk.CTkButton(self.iconframe, text=None,image=images["home"],height=60,width=60,command=self.home)
+        self.portficon = ctk.CTkButton(self.iconframe,text=None,image=images["pf"],height=60,width=60,command=self.portf)
         # self.wm_attributes("-alpha","0.9")
         
     def botrightfill(self):
@@ -221,6 +221,10 @@ class UI(ctk.CTk):
         self.trf_dperc.configure(text=str(self.lddict[xcode]["D%"].iloc[0].round(3))+"%")   
         self.shares.configure(text=self.tokenledger["qty"].sum().round(2))
         self.netval.configure(text=str(round(self.lddict[xcode]["Close"].iloc[0]*self.userledger[self.userledger["token"]==xcode]["qty"].sum(),2))+"USD")
+        self.lopenv.configure(text=self.lddict[xcode]["Open"].iloc[0].round(3))
+        self.lhighv.configure(text=self.lddict[xcode]["High"].iloc[0].round(3))
+        self.llowv.configure(text=self.lddict[xcode]["Low"].iloc[0].round(3))
+        self.lclosev.configure(text=self.lddict[xcode]["Close"].iloc[0].round(3))
 
     def movedays(self,date, ndays=21, isforward=True):
         
@@ -460,6 +464,13 @@ class UI(ctk.CTk):
         self.sell = ctk.CTkButton(self.toprightframe, text="Sell",font=("Helvetica",35,"bold"), width=rfw//2,fg_color="#e04d5c", height=48, command=sell)
         self.entry = ctk.CTkEntry(self.toprightframe, width=rfw//2, height=24, placeholder_text="Enter Units")
         
+        if self.lddict[xcode]["D"].iloc[0] > 0:
+            self.trf_dperc.configure(text_color="#1f9358")
+            self.trf_d.configure(text_color="#1f9358")
+        else:
+            self.trf_dperc.configure(text_color="#e04d5c")
+            self.trf_d.configure(text_color="#e04d5c")
+
         self.aag = ctk.CTkLabel(self.toprightframe, text="At A Glance {}".format(edate), fg_color="#0d1017", width=rfw, height=24)
         self.lopen = ctk.CTkLabel(self.toprightframe, text="Open", fg_color="#1d2950", width=rfw//2, height=24, padx=5)
         self.lhigh = ctk.CTkLabel(self.toprightframe, text="High", fg_color="#161929", width=rfw//2, height=24,padx=5)
@@ -493,7 +504,7 @@ class UI(ctk.CTk):
         self.botrightframe.place(x=1280-tw-40,y=400)
         
         self.histbtn = ctk.CTkButton(self, text="Show History", font=("Helvetica", 20, "bold"), width=rfw//2, height=48, corner_radius=0, fg_color="#1c2951", command=partial(self.graphspace.show_history,self))
-        self.histbtn.place(x=1240-tw*2,y=400)
+        self.histbtn.place(x=1240-tw*2.5,y=555)
 
         
         self.btndict["COMO"].tradbutton.configure(state="disabled")
