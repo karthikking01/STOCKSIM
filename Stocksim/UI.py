@@ -99,7 +99,7 @@ class customcandlestick(ctk.CTkFrame):
         UI.histwin.geometry("1280x720")
         
         data = loadhistory(xcode,edate)
-        _fig, ax = mpf.plot(data, type="candle",title=TRDX[xcode],datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=2, panel_ratios=(3,1),tight_layout=False)
+        _fig, ax = mpf.plot(data, type="line",title=TRDX[xcode],datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=2, panel_ratios=(3,1),tight_layout=False)
 
         print(ax)
         
