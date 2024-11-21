@@ -43,7 +43,7 @@ play = True
 tasv = 0
 tval = None
 
-images = {"home":ctk.CTkImage(light_image=Image.open("Stocksim/plot/data/images/home.png"),dark_image=Image.open("Stocksim/plot/data/images/home.png"),size=(25,25)), "pf":ctk.CTkImage(light_image=Image.open("Stocksim/plot/data/images/pf.png"),dark_image=Image.open("Stocksim/plot/data/images/pf.png"),size=(25,25))}
+images = {"home":ctk.CTkImage(light_image=Image.open("Stocksim/plot/data/images/home.png"),dark_image=Image.open("Stocksim/plot/data/images/home.png"),size=(25,25)), "pf":ctk.CTkImage(dark_image=Image.open("Stocksim/plot/data/images/pf.png"),size=(25,25))}
 def save():
     xledger.save_to_csv()
     with open("Stocksim/plot/data/userdata.csv","a") as file:
@@ -432,7 +432,7 @@ class UI(ctk.CTk):
             self.botrightfill()
             
             
-        self.leftframe = ctk.CTkFrame(self, width=tw, height=720, corner_radius=0,fg_color="#2d303e")
+        self.leftframe = ctk.CTkScrollableFrame(self, width=tw, height=720, corner_radius=0,fg_color="#2d303e")
         self.tlable = ctk.CTkLabel(self.leftframe, text="Tradables",height=48, width=tw+2, font=("Arial", 20),bg_color="#2b2b2b").pack()
         for i in TRDX:
             self.btndict[i]= tab(self.leftframe, i, self.lddict[i]["Close"].iloc[0].round(3), self.lddict[i]["D%"].iloc[0].round(1))
@@ -637,7 +637,8 @@ class UI(ctk.CTk):
         self.portflowerframe.place(x=60,y=370)
 
         del txn_id_label, date_label, user_label, code_label, units_label, price_label, action_label, liqchange_label, rown
-        
-app = UI()
-app.protocol("WM_DELETE_WINDOW", save)
-app.mainloop()
+
+if __name__ == "__main__":
+    app = UI()
+    app.protocol("WM_DELETE_WINDOW", save)
+    app.mainloop()
