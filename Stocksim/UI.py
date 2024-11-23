@@ -49,7 +49,7 @@ def save():
         xledger.save_to_csv()
         with open("Stocksim/plot/data/userdata.csv","a") as file:
             file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,sdate,edate,ddays,itertime,liq))
-        sys.exit()
+    sys.exit()
 class customcandlestick(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
