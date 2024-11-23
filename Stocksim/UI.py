@@ -36,8 +36,8 @@ bw = 110
 tw = (bw*2)+48
 vw = 1180-2*tw
 rfw = tw+40
-usr = ""
-pwd = ""
+usr = None
+pwd = None
 liq = None
 play = True
 tasv = 0
@@ -45,10 +45,11 @@ tval = None
 
 images = {"home":ctk.CTkImage(light_image=Image.open("Stocksim/plot/data/images/home.png"),dark_image=Image.open("Stocksim/plot/data/images/home.png"),size=(25,25)), "pf":ctk.CTkImage(dark_image=Image.open("Stocksim/plot/data/images/pf.png"),size=(25,25)),"add":ctk.CTkImage(dark_image=Image.open("Stocksim/plot/data/images/add.png"),size=(25,25))}
 def save():
-    xledger.save_to_csv()
-    with open("Stocksim/plot/data/userdata.csv","a") as file:
-        file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,sdate,edate,ddays,itertime,liq))
-    sys.exit()
+    if usr is not None:
+        xledger.save_to_csv()
+        with open("Stocksim/plot/data/userdata.csv","a") as file:
+            file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,sdate,edate,ddays,itertime,liq))
+        sys.exit()
 class customcandlestick(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
