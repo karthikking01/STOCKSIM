@@ -36,14 +36,14 @@ bw = 110
 tw = (bw*2)+48
 vw = 1180-2*tw
 rfw = tw+40
-usr = "admin"
-pwd = "admin"
+usr = ""
+pwd = ""
 liq = None
 play = True
 tasv = 0
 tval = None
 
-images = {"home":ctk.CTkImage(light_image=Image.open("Stocksim/plot/data/images/home.png"),dark_image=Image.open("Stocksim/plot/data/images/home.png"),size=(25,25)), "pf":ctk.CTkImage(dark_image=Image.open("Stocksim/plot/data/images/pf.png"),size=(25,25))}
+images = {"home":ctk.CTkImage(light_image=Image.open("Stocksim/plot/data/images/home.png"),dark_image=Image.open("Stocksim/plot/data/images/home.png"),size=(25,25)), "pf":ctk.CTkImage(dark_image=Image.open("Stocksim/plot/data/images/pf.png"),size=(25,25)),"add":ctk.CTkImage(dark_image=Image.open("Stocksim/plot/data/images/add.png"),size=(25,25))}
 def save():
     xledger.save_to_csv()
     with open("Stocksim/plot/data/userdata.csv","a") as file:
@@ -260,12 +260,6 @@ class UI(ctk.CTk):
     
     def login(self):
         global xcode, ddays, edate, sdate, bw, tw, usr, pwd, liq
-        self.loginw = ctk.CTkToplevel(self)
-        self.loginw.title("Login")
-        self.loginw.geometry("200x200")
-        # self.loginw.resizable(False, False)
-        self.loginw.wm_attributes("-alpha","0.9","-topmost","True")
-        self.loginw.protocol("WM_DELETE_WINDOW",sys.exit)
 
         def loginx(event): # Event for bind 
             global xcode, ddays, edate, sdate, bw, tw, usr, pwd, liq, tasv, tval, itertime
@@ -283,8 +277,12 @@ class UI(ctk.CTk):
                     ddays = config[3]
                     itertime = config[4]
                     liq = round(config[5],2)
-                    self.loginw.destroy()
                     self.home()
+                    
+                    for i in self.login_form.winfo_children():
+                        del i
+                    del self.login_form
+                    
                     self.iconframe.place(x=0,y=0)
                     self.homeicon.place(x=0,y=0)
                     self.portficon.place(x=0,y=60)
@@ -302,16 +300,18 @@ class UI(ctk.CTk):
                         mb.showerror(title="Error", message="Create a stronger password!".format(usr), icon="info", type=mb.OK)
                     
                         
-                    
-        self.usren = ctk.CTkEntry(self.loginw, width=200, height=32, placeholder_text="Username")
-        self.pwden = ctk.CTkEntry(self.loginw, width=200, height=32, placeholder_text="Password", show="*")
-        self.loginbtn = ctk.CTkButton(self.loginw, text="Login", width=100, height=32, command=partial(loginx,None))
+        self.login_form = ctk.CTkFrame(self, width=300, height=200)           
+        self.usren = ctk.CTkEntry(self.login_form, width=200, height=32, placeholder_text="Username")
+        self.pwden = ctk.CTkEntry(self.login_form, width=200, height=32, placeholder_text="Password", show="*")
+        self.loginbtn = ctk.CTkButton(self.login_form, text="Login", width=100, height=32, command=partial(loginx,None))
 
         self.pwden.bind("<Return>", command=loginx)
         
         self.usren.grid(row=0,column=0,pady=10)
         self.pwden.grid(row=1,column=0,pady=10)
         self.loginbtn.grid(row=2,column=0,pady=10)
+        
+        self.login_form.place(relx=0.5,rely=0.5,anchor="center")
         
     def home(self):
         try:
