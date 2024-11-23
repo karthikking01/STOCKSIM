@@ -194,5 +194,4 @@ if __name__ == "__main__":
     l.txn(datetime.date(2000,1,15),"user1","ASBL",100,1)
     l.txn(datetime.date(2000,1,15),"user1","ASBL",100,-1)
     token_data=l.fetch_token_data("user1","ASBL")
-    print(token_data)
     get_config("admin","admin01")
