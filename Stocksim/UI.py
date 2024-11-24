@@ -25,11 +25,12 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from datetime import datetime, timedelta
 import sys
 
+TRDX = pd.read_csv("Stocksim/plot/data/tickers.csv",header=None, index_col=0, names=["name"]).to_dict()["name"]
+
 xledger = ledger("Stocksim/plot/data/ledger.csv")
-xcode = "COMO"
+xcode = None
 ddays = 21
 sdate = datetime(2000,1,3).date()
-print(sdate)
 edate = None
 itertime = 5000
 bw = 110
@@ -276,6 +277,7 @@ class UI(ctk.CTk):
                     sdate = config[1].date()
                     edate = config[2].date()
                     ddays = config[3]
+                    xcode = xledger
                     itertime = config[4]
                     liq = round(config[5],2)
                     self.home()
@@ -329,7 +331,7 @@ class UI(ctk.CTk):
         i = None
         self.btndict = {}
         self.txnlist = []
-        self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRD}
+        self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRDX}
         self.tokenledger = xledger.fetch_token_data(usr,xcode)
         self.userledger = xledger.fetch_user_data(usr)
         

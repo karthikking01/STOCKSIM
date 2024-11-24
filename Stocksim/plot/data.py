@@ -3,7 +3,6 @@ import yfinance as yf
 # import pandas_datareader.data as pdr
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import datetime
-import time
 """
 1.Astral Blip         (ASBL)
 2.Confiscated Motive  (COMO)
@@ -20,39 +19,6 @@ import time
 13.Undefined Reading   (UNRE)
 14.Untapped Potential  (UNPO)
 """
-TRDX = {
-    "ASBL": "Astral Blip",
-    "COMO": "Confiscated Motive",
-    "COSA": "Corrupted Sample",
-    "ENEC": "Entropic Echo",
-    "HITR": "Hidden Trend",
-    "HOME": "House Memory",
-    "INPA": "Intrusive Pattern",
-    "REMT": "Remote Thought",
-    "RITM": "Ritual Impulse",
-    "SHFA": "Shaded Facet",
-    "SHIF": "Shifting Fragment",
-    "THRE": "Threshold Remnant",
-    "UNRE": "Undefined Reading",
-    "UNPO": "Untapped Potential"
-}
-
-TRD = {
-    "ASBL": "AAPL",
-    "COMO": "NVDA",
-    "COSA": "MSFT",
-    "ENEC": "AXP",
-    "HITR": "AMZN",
-    "HOME": "KO",
-    "INPA": "LLY",
-    "REMT": "INTC",
-    "RITM": "WMT",
-    "SHFA": "JPM",
-    "SHIF": "IBM",
-    "THRE": "XOM",
-    "UNRE": "UNH",
-    "UNPO": "ORCL"
-}
 
 binance_dark = {
     "base_mpl_style": "dark_background",
@@ -82,7 +48,7 @@ binance_dark = {
     },
     "base_mpf_style": "binance-dark",
 }
-
+    
 
 def get_config(usr,pwd):
     x = pd.read_csv("Stocksim/plot/data/userdata.csv", names=["pwd","sdate","edate","ndays","itertime","liq"], index_col=0)
@@ -130,30 +96,30 @@ def loadhistory(name, edate):
                 return df
 
 def lfw(name):
-    """Loads Ticker from Web"""
-    tk = yf.Ticker(TRD[name]) # get ticker (YahooFinance module)
-    x = pd.DataFrame(tk.history(period="max"))
-    x.index = [d.strftime('%Y-%m-%d') for d in x.index.date]
-    x = x.drop(columns=["Dividends","Stock Splits"]).loc["2000-01-03":]
-    x.to_csv("Stocksim/plot/data/{}.csv".format(name),header=False)  
-    del x
+    try:
+        """Loads Ticker from Web"""
+        tk = yf.Ticker(name) # get ticker (YahooFinance module)
+        x = pd.DataFrame(tk.history(period="max"))
+        x.index = [d.strftime('%Y-%m-%d') for d in x.index.date]
+        x = x.drop(columns=["Dividends","Stock Splits"]).loc["2000-01-03":]
+        x.to_csv("Stocksim/plot/data/{}.csv".format(name),header=False)  
+        del x
+    except:
+        pass
     
 
 def tradable(name,sdate,dnrows,lastday = False):
-    if name in TRDX:
-        try:
-            if lastday == False:
-                return lff(name,sdate,dnrows)
-            else:
-                return lff(name,sdate,dnrows).tail(1)
-        except FileNotFoundError or pd.errors.EmptyDataError:
-            lfw(name)
-            if lastday == False:
-                return lff(name,sdate,dnrows)
-            else:
-                return lff(name,sdate,dnrows).tail(1)
-    else:
-        raise ValueError("Invalid Name: {} is not a valid Material REFER TO TRD".format(name))
+    try:
+        if lastday == False:
+            return lff(name,sdate,dnrows)
+        else:
+            return lff(name,sdate,dnrows).tail(1)
+    except FileNotFoundError or pd.errors.EmptyDataError:
+        lfw(name)
+        if lastday == False:
+            return lff(name,sdate,dnrows)
+        else:
+            return lff(name,sdate,dnrows).tail(1)
     
 class ledger():
     def __init__(self, file):

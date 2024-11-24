@@ -26,8 +26,8 @@ for i in range(5):
     
 catcher.pack()
 
-add_btn = ctk.CTkButton(master=catcher, text=None,image=images["add"], width=3*bw, height=48, corner_radius=10, fg_color="#202020",anchor="c")
-add_btn.pack()
+add_btn = ctk.CTkButton(master=catcher, text=None,image=images["add"], width=2*bw+48, height=48, corner_radius=10, fg_color="#202020",anchor="c")
+add_btn.pack(padx=5)
 
 
 
