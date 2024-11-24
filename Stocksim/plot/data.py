@@ -2,7 +2,7 @@ import pandas as pd
 import yfinance as yf
 # import pandas_datareader.data as pdr
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import datetime
+from datetime import *
 """
 1.Astral Blip         (ASBL)
 2.Confiscated Motive  (COMO)
@@ -68,6 +68,11 @@ def get_config(usr,pwd):
 def lff(name,sdate:datetime.date,dnrows):
     """Loads Data from file ranging from sdate to sdate+dnrows"""
     with open("Stocksim/plot/data/{}.csv".format(name), "r") as f:
+    #read first line as tuple
+        fdate = f.readline().split(",")[0]
+        fdate = datetime.strptime(fdate, "%Y-%m-%d").date()
+        if (fdate-sdate) > timedelta(days=10):
+            return pd.DataFrame([[0,0,0,0,0,0,0]]*dnrows, columns=["Open","High","Low","Close","Volume","D","D%"])
         for count, l in enumerate(f): #count number of iterations ie lines moved
             if str(l).startswith(str(sdate)): # if line starts with sdate
                 df = pd.read_csv("Stocksim/plot/data/{}.csv".format(name),header=None,index_col=0,skiprows=count,nrows=dnrows) #skip number of lines equal to count and read dnrows lines
@@ -80,6 +85,7 @@ def lff(name,sdate:datetime.date,dnrows):
                 break
     try:
         return df
+        print(df)
     except UnboundLocalError:
         nextday = sdate+datetime.timedelta(days=1)
         return lff(name,nextday,dnrows)
@@ -153,11 +159,11 @@ class ledger():
     
     
 if __name__ == "__main__":
-    test=tradable("ASBL",datetime.date(2000,1,15), 21, False)
+    test=tradable("TCS.NS",date(2000,1,15), 21, False)
     x = test
     print(x)
     l = ledger(file="Stocksim/plot/data/ledger.csv")
-    l.txn(datetime.date(2000,1,15),"user1","ASBL",100,1)
-    l.txn(datetime.date(2000,1,15),"user1","ASBL",100,-1)
-    token_data=l.fetch_token_data("user1","ASBL")
+    l.txn(date(2000,1,15),"user1","ASBL",100,1)
+    l.txn(date(2000,1,15),"user1","ASBL",100,-1)
+    token_data=l.fetch_token_data("user1","TCS.NS")
     get_config("admin","admin01")

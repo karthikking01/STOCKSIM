@@ -28,7 +28,7 @@ import sys
 TRDX = pd.read_csv("Stocksim/plot/data/tickers.csv",header=None, index_col=0, names=["name"]).to_dict()["name"]
 
 xledger = ledger("Stocksim/plot/data/ledger.csv")
-xcode = None
+xcode = "TITAN.NS"
 ddays = 21
 sdate = datetime(2000,1,3).date()
 edate = None
@@ -55,9 +55,8 @@ class customcandlestick(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
         global xcode, ddays, edate, sdate, bw, tw
-        self.date = sdate
         self.ndays = ddays
-        self.trd = tradable(xcode,self.date,ddays)
+        self.trd = tradable(xcode,sdate,ddays)
         self.configure(width=1280, height=720)
         
         sdate = self.trd.index[0].date()
