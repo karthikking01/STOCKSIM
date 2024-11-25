@@ -1,24 +1,8 @@
 import pandas as pd
 import yfinance as yf
-# import pandas_datareader.data as pdr
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from datetime import *
-"""
-1.Astral Blip         (ASBL)
-2.Confiscated Motive  (COMO)
-3.Corrupted Sample    (COSA)
-4.Entropic Echo       (ENEC)
-5.Hidden Trend        (HITR)
-6.House Memory        (HOME)
-7.Intrusive Pattern   (INPA)
-8.Remote Thought      (REMT)
-9.Ritual Impulse      (RITM)
-10.Shaded Facet        (SHFA)
-11.Shifting Fragment   (SHIF)
-12.Threshold Remnant   (THRE)
-13.Undefined Reading   (UNRE)
-14.Untapped Potential  (UNPO)
-"""
+
+datelist = pd.read_csv("Stocksim/plot/data/datelist.csv", header=None)[0].tolist()
 
 binance_dark = {
     "base_mpl_style": "dark_background",
@@ -49,6 +33,13 @@ binance_dark = {
     "base_mpf_style": "binance-dark",
 }
     
+def get_tickers(usr):
+    x = pd.read_csv("Stocksim/plot/data/tickers.csv",header=None, index_col=0, names=["ticker","name"])
+    x = x[x.index == usr]
+    x.index = x["ticker"]
+    del x["ticker"]
+    return x
+
 
 def get_config(usr,pwd):
     x = pd.read_csv("Stocksim/plot/data/userdata.csv", names=["pwd","sdate","edate","ndays","itertime","liq"], index_col=0)
@@ -65,15 +56,11 @@ def get_config(usr,pwd):
         return (400,None,None)
 
 
-def lff(name,sdate:datetime.date,dnrows):
+def lff(name,sdate,dnrows):
     """Loads Data from file ranging from sdate to sdate+dnrows"""
     with open("Stocksim/plot/data/{}.csv".format(name), "r") as f:
-    #read first line as tuple
-        fdate = f.readline().split(",")[0]
-        fdate = datetime.strptime(fdate, "%Y-%m-%d").date()
-        if (fdate-sdate) > timedelta(days=10):
-            return pd.DataFrame([[0,0,0,0,0,0,0]]*dnrows, columns=["Open","High","Low","Close","Volume","D","D%"])
         for count, l in enumerate(f): #count number of iterations ie lines moved
+            print(l)
             if str(l).startswith(str(sdate)): # if line starts with sdate
                 df = pd.read_csv("Stocksim/plot/data/{}.csv".format(name),header=None,index_col=0,skiprows=count,nrows=dnrows) #skip number of lines equal to count and read dnrows lines
                 df.index = pd.to_datetime(df.index, format='%Y-%m-%d') # convert index to datetime
@@ -83,12 +70,12 @@ def lff(name,sdate:datetime.date,dnrows):
                 df["D%"] = df["D"]/df["Open"]*100 # perc change
                 # df["height"] = df["High"]-df["Low"] # height
                 break
-    try:
-        return df
-        print(df)
-    except UnboundLocalError:
-        nextday = sdate+datetime.timedelta(days=1)
-        return lff(name,nextday,dnrows)
+    # try:
+    #     return df
+    # except UnboundLocalError:
+    #     nextday = sdate+timedelta(days=1)
+    #     return lff(name,nextday,dnrows)
+
 
 def loadhistory(name, edate):
     with open("Stocksim/plot/data/{}.csv".format(name), "r") as f:
@@ -102,16 +89,20 @@ def loadhistory(name, edate):
                 return df
 
 def lfw(name):
-    try:
-        """Loads Ticker from Web"""
-        tk = yf.Ticker(name) # get ticker (YahooFinance module)
-        x = pd.DataFrame(tk.history(period="max"))
-        x.index = [d.strftime('%Y-%m-%d') for d in x.index.date]
-        x = x.drop(columns=["Dividends","Stock Splits"]).loc["2000-01-03":]
-        x.to_csv("Stocksim/plot/data/{}.csv".format(name),header=False)  
-        del x
-    except:
-        pass
+    """Loads Ticker from Web"""
+    tk = yf.Ticker(name) # get ticker (YahooFinance module)
+    x = pd.DataFrame(tk.history(period="max"))
+    x.index = [d.strftime('%Y-%m-%d') for d in x.index.date]
+    x = x.drop(columns=["Dividends","Stock Splits"]).loc["2000-01-03":]
+    if x.index[0] != "2000-01-03":
+        finalindex = x.index[0]
+        print(datelist.index("2001-01-03"))
+        print(datelist[datelist.index("2000-01-03"):datelist.index(finalindex)])
+        zeroindex = datelist[datelist.index("2000-01-03"):datelist.index(finalindex)]
+        zdf = pd.DataFrame(0,columns=["Open","High","Low","Close","Volume"],index=zeroindex)
+        x = pd.concat([zdf,x])
+    x.to_csv("Stocksim/plot/data/{}.csv".format(name),header=False)
+    del x
     
 
 def tradable(name,sdate,dnrows,lastday = False):
@@ -159,11 +150,14 @@ class ledger():
     
     
 if __name__ == "__main__":
-    test=tradable("TCS.NS",date(2000,1,15), 21, False)
-    x = test
-    print(x)
-    l = ledger(file="Stocksim/plot/data/ledger.csv")
-    l.txn(date(2000,1,15),"user1","ASBL",100,1)
-    l.txn(date(2000,1,15),"user1","ASBL",100,-1)
-    token_data=l.fetch_token_data("user1","TCS.NS")
-    get_config("admin","admin01")
+    # test=tradable("TCS.NS",date(2000,1,15), 21, False)
+    # x = test
+    # print(x)
+    # l = ledger(file="Stocksim/plot/data/ledger.csv")
+    # l.txn(date(2000,1,15),"user1","ASBL",100,1)
+    # l.txn(date(2000,1,15),"user1","ASBL",100,-1)
+    # token_data=l.fetch_token_data("user1","TCS.NS")
+    # get_config("admin","admin01")
+    print(get_tickers("user"))
+    trx = tradable("LT.NS",date(2000,1,3), 21, False)
+    print(trx)

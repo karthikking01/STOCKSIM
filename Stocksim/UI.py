@@ -25,10 +25,10 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from datetime import datetime, timedelta
 import sys
 
-TRDX = pd.read_csv("Stocksim/plot/data/tickers.csv",header=None, index_col=0, names=["name"]).to_dict()["name"]
-
+TRDX = None
+datelist = pd.read_csv("Stocksim/plot/data/datelist.csv", header=None)[0].tolist()
 xledger = ledger("Stocksim/plot/data/ledger.csv")
-xcode = "TITAN.NS"
+xcode = None
 ddays = 21
 sdate = datetime(2000,1,3).date()
 edate = None
@@ -255,7 +255,7 @@ class UI(ctk.CTk):
                 self.btndict[i].upd(self.lddict[i]["Close"].iloc[0].round(1), self.lddict[i]["D%"].iloc[0].round(1))
             self.toprightfill()
             self.currd.configure(text="Curently Displaying: {} thru {}".format(sdate, edate))
-            self.after(itertime,partial(self.movedays,sdate+timedelta(days=1)))
+            self.after(itertime,partial(self.movedays,datelist[datelist.index(sdate)+1]))
             print(sdate,edate, itertime)
     
     
@@ -263,7 +263,7 @@ class UI(ctk.CTk):
         global xcode, ddays, edate, sdate, bw, tw, usr, pwd, liq
 
         def loginx(event): # Event for bind 
-            global xcode, ddays, edate, sdate, bw, tw, usr, pwd, liq, tasv, tval, itertime
+            global xcode, ddays, edate, sdate, bw, tw, usr, pwd, liq, tasv, tval, itertime, TRDX
             usr = self.usren.get()
             pwd = self.pwden.get()
             print(usr)
@@ -273,12 +273,14 @@ class UI(ctk.CTk):
             
             match config[0]: # fancy if-elif
                 case 200:
+                    TRDX = get_tickers(usr)
                     sdate = config[1].date()
                     edate = config[2].date()
                     ddays = config[3]
-                    xcode = xledger
+                    xcode = get_tickers(usr).index.tolist()[-1]
                     itertime = config[4]
                     liq = round(config[5],2)
+                    print(TRDX)
                     self.home()
                     
                     for i in self.login_form.winfo_children():
@@ -330,7 +332,8 @@ class UI(ctk.CTk):
         i = None
         self.btndict = {}
         self.txnlist = []
-        self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRDX}
+        print(sdate, ddays)
+        # self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRDX.index.tolist()}
         self.tokenledger = xledger.fetch_token_data(usr,xcode)
         self.userledger = xledger.fetch_user_data(usr)
         
@@ -509,7 +512,7 @@ class UI(ctk.CTk):
         self.histbtn.place(x=1240-tw*2.5,y=555)
 
         
-        self.btndict["COMO"].tradbutton.configure(state="disabled")
+        self.btndict[xcode].tradbutton.configure(state="disabled")
         self.trf_name.grid(row=0,column=0, columnspan=2, rowspan=1)
         self.trf_code.grid(row=1,column=0, columnspan=2, rowspan=1)
         self.trf_curr.grid(row=2,column=0,columnspan=1, rowspan=2, padx=(0,1))
