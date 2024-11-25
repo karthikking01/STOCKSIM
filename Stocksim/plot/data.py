@@ -38,7 +38,13 @@ def get_tickers(usr):
     x = x[x.index == usr]
     x.index = x["ticker"]
     del x["ticker"]
+    x.index.name = None
     return x
+
+def add_tickers(usr,sdate,ndays,ticker):
+    tickername = str(yf.Ticker(ticker).info["longName"]).replace("Limited","Ltd.")
+    with open("Stocksim/plot/data/tickers.csv", "a") as f:
+        f.write("{},{},{}\n".format(usr,ticker,tickername))
 
 
 def get_config(usr,pwd):
@@ -60,8 +66,8 @@ def lff(name,sdate,dnrows):
     """Loads Data from file ranging from sdate to sdate+dnrows"""
     with open("Stocksim/plot/data/{}.csv".format(name), "r") as f:
         for count, l in enumerate(f): #count number of iterations ie lines moved
-            print(l)
-            if str(l).startswith(str(sdate)): # if line starts with sdate
+            # print(str(l).startswith(str(sdate)))
+            if str(l).startswith(str(sdate)):# if line starts with sdate
                 df = pd.read_csv("Stocksim/plot/data/{}.csv".format(name),header=None,index_col=0,skiprows=count,nrows=dnrows) #skip number of lines equal to count and read dnrows lines
                 df.index = pd.to_datetime(df.index, format='%Y-%m-%d') # convert index to datetime
                 df.index.name=None # removing index name
@@ -70,11 +76,7 @@ def lff(name,sdate,dnrows):
                 df["D%"] = df["D"]/df["Open"]*100 # perc change
                 # df["height"] = df["High"]-df["Low"] # height
                 break
-    # try:
-    #     return df
-    # except UnboundLocalError:
-    #     nextday = sdate+timedelta(days=1)
-    #     return lff(name,nextday,dnrows)
+        return df
 
 
 def loadhistory(name, edate):
@@ -93,12 +95,12 @@ def lfw(name):
     tk = yf.Ticker(name) # get ticker (YahooFinance module)
     x = pd.DataFrame(tk.history(period="max"))
     x.index = [d.strftime('%Y-%m-%d') for d in x.index.date]
-    x = x.drop(columns=["Dividends","Stock Splits"]).loc["2000-01-03":]
-    if x.index[0] != "2000-01-03":
+    x = x.drop(columns=["Dividends","Stock Splits"]).loc["2015-01-02":]
+    if x.index[0] != "2015-01-02":
         finalindex = x.index[0]
-        print(datelist.index("2001-01-03"))
-        print(datelist[datelist.index("2000-01-03"):datelist.index(finalindex)])
-        zeroindex = datelist[datelist.index("2000-01-03"):datelist.index(finalindex)]
+        print(datelist.index("2015-01-02"))
+        print(datelist[datelist.index("2015-01-02"):datelist.index(finalindex)])
+        zeroindex = datelist[datelist.index("2015-01-02"):datelist.index(finalindex)]
         zdf = pd.DataFrame(0,columns=["Open","High","Low","Close","Volume"],index=zeroindex)
         x = pd.concat([zdf,x])
     x.to_csv("Stocksim/plot/data/{}.csv".format(name),header=False)
@@ -159,5 +161,5 @@ if __name__ == "__main__":
     # token_data=l.fetch_token_data("user1","TCS.NS")
     # get_config("admin","admin01")
     print(get_tickers("user"))
-    trx = tradable("LT.NS",date(2000,1,3), 21, False)
+    trx = tradable("TATAMOTORS.NS",date(2000,1,3),21)
     print(trx)

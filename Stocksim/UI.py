@@ -51,6 +51,7 @@ def save():
         with open("Stocksim/plot/data/userdata.csv","a") as file:
             file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,sdate,edate,ddays,itertime,liq))
         sys.exit()
+        
 class customcandlestick(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -61,7 +62,7 @@ class customcandlestick(ctk.CTkFrame):
         
         sdate = self.trd.index[0].date()
         edate = self.trd.index[-1].date()
-        self.fig, self.ax = mpf.plot(self.trd,title=TRDX[xcode], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=0.8, panel_ratios=(3,1),tight_layout=False)
+        self.fig, self.ax = mpf.plot(self.trd,title=TRDX.loc[xcode,"name"], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=0.8, panel_ratios=(3,1),tight_layout=False)
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         
@@ -79,7 +80,7 @@ class customcandlestick(ctk.CTkFrame):
         sdate = self.trd.index[0].date()
         edate = self.trd.index[-1].date()
         print(sdate,edate)
-        self.fig, self.ax = mpf.plot(self.trd, title=TRDX[xcode], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=0.8, panel_ratios=(3,1),tight_layout=False)
+        self.fig, self.ax = mpf.plot(self.trd, title=TRDX.loc[xcode,"name"], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=0.8, panel_ratios=(3,1),tight_layout=False)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.draw()
         
@@ -100,7 +101,7 @@ class customcandlestick(ctk.CTkFrame):
         UI.histwin.geometry("1280x720")
         
         data = loadhistory(xcode,edate)
-        _fig, ax = mpf.plot(data, type="line",title=TRDX[xcode],datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=2, panel_ratios=(3,1),tight_layout=False)
+        _fig, ax = mpf.plot(data, type="line",title=TRDX.loc[xcode,"name"],datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=2, panel_ratios=(3,1),tight_layout=False)
 
         print(ax)
         
@@ -122,9 +123,14 @@ class tab(ctk.CTkFrame):
         super().__init__(parent)
         labelc="#000"
         self.Tcode = Code
+        self.text = TRDX.loc[Code,"name"]
+        
+        if len(self.text) > 15:
+            self.text = self.text[:15]+".."
+        
         self.code = ctk.CTkLabel(self, text=Code,font=("Arial", 12, "bold"),padx=5,width=bw, height=24,anchor="w",bg_color=labelc)
-        self.name = ctk.CTkLabel(self, text=TRDX[Code],width=bw,font=('Helevtica',10, "italic"),text_color="grey",padx=5, height=24,anchor="w",bg_color=labelc)
-        self.curr = ctk.CTkLabel(self, text=str(Curr)+" USD",width=bw, height=24,anchor="e",bg_color=labelc)
+        self.name = ctk.CTkLabel(self, text=self.text,width=bw,font=('Helevtica',10, "italic"),text_color="grey",padx=5, height=24,anchor="w",bg_color=labelc)
+        self.curr = ctk.CTkLabel(self, text=str(Curr)+" INR",width=bw, height=24,anchor="e",bg_color=labelc)
         self.Dperc = ctk.CTkLabel(self, text=str(Dperc)+"%",width=bw, height=24,anchor="e",bg_color=labelc)
         self.tradbutton = ctk.CTkButton(self, text="View", width=48, height=48, corner_radius=10, fg_color="#202020",anchor="c")
         
@@ -141,7 +147,7 @@ class tab(ctk.CTkFrame):
 
     def upd(self,Curr,Dperc):
         global xcode, ddays, edate, sdate, bw, tw
-        self.curr.configure(text=str(Curr)+" USD")
+        self.curr.configure(text=str(Curr)+" INR")
         self.Dperc.configure(text=str(Dperc)+"%")
         if Dperc > 0:
             self.Dperc.configure(text_color="#3dc985")
@@ -187,7 +193,7 @@ class UI(ctk.CTk):
             price_label = ctk.CTkLabel(self.botrightscrollable, text=self.tokenledger.loc[i, 'price'].round(2), font=("font77", 11), width=rbw//6,fg_color="#000044")
             qty_label = ctk.CTkLabel(self.botrightscrollable, text=abs(self.tokenledger.loc[i, 'qty'].round(2)), font=("font77", 11), width=rbw//6,fg_color="#000055")
             amt_label = ctk.CTkLabel(self.botrightscrollable, text=self.tokenledger.loc[i, 'amt'].round(2), font=("font77", 11), width=rbw//6,fg_color="#000066")
-            buy_sell_label = ctk.CTkLabel(self.botrightscrollable,text="$buysell", font=("font77", 11), width=rbw//6,fg_color="#000077")
+            buy_sell_label = ctk.CTkLabel(self.botrightscrollable,text="₹buysell", font=("font77", 11), width=rbw//6,fg_color="#000077")
             if self.tokenledger.loc[i, 'qty'] > 0:
                 buy_sell_label.configure(text="Buy", text_color="#3dc985")
             else:
@@ -215,13 +221,13 @@ class UI(ctk.CTk):
                     tokenledgerlist[i][j].grid(row=c+1,column=j)
                     
     def toprightfill(self):
-        self.trf_name.configure(text=TRDX[xcode])
+        self.trf_name.configure(text=TRDX.loc[xcode,"name"])
         self.trf_code.configure(text=xcode)
-        self.trf_curr.configure(text="$ "+str(self.lddict[xcode]["Close"].iloc[0].round(3)))
-        self.trf_d.configure(text=str(self.lddict[xcode]["D"].iloc[0].round(3))+" USD")
+        self.trf_curr.configure(text="₹ "+str(self.lddict[xcode]["Close"].iloc[0].round(3)))
+        self.trf_d.configure(text=str(self.lddict[xcode]["D"].iloc[0].round(3))+" INR")
         self.trf_dperc.configure(text=str(self.lddict[xcode]["D%"].iloc[0].round(3))+"%")   
         self.shares.configure(text=self.tokenledger["qty"].sum().round(2))
-        self.netval.configure(text=str(round(self.lddict[xcode]["Close"].iloc[0]*self.userledger[self.userledger["token"]==xcode]["qty"].sum(),2))+"USD")
+        self.netval.configure(text=str(round(self.lddict[xcode]["Close"].iloc[0]*self.userledger[self.userledger["token"]==xcode]["qty"].sum(),2))+"INR")
         self.lopenv.configure(text=self.lddict[xcode]["Open"].iloc[0].round(3))
         self.lhighv.configure(text=self.lddict[xcode]["High"].iloc[0].round(3))
         self.llowv.configure(text=self.lddict[xcode]["Low"].iloc[0].round(3))
@@ -238,7 +244,7 @@ class UI(ctk.CTk):
             sdate = date
             
             self.graphspace.upd(ndate=sdate, ndays=ddays)
-            self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRDX}
+            self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRDX.index}
             
             tasv=0
             for i in self.lddict:
@@ -255,7 +261,7 @@ class UI(ctk.CTk):
                 self.btndict[i].upd(self.lddict[i]["Close"].iloc[0].round(1), self.lddict[i]["D%"].iloc[0].round(1))
             self.toprightfill()
             self.currd.configure(text="Curently Displaying: {} thru {}".format(sdate, edate))
-            self.after(itertime,partial(self.movedays,datelist[datelist.index(sdate)+1]))
+            self.after(itertime,partial(self.movedays,datelist[datelist.index(str(sdate))+1]))
             print(sdate,edate, itertime)
     
     
@@ -333,7 +339,7 @@ class UI(ctk.CTk):
         self.btndict = {}
         self.txnlist = []
         print(sdate, ddays)
-        # self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRDX.index.tolist()}
+        self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRDX.index}
         self.tokenledger = xledger.fetch_token_data(usr,xcode)
         self.userledger = xledger.fetch_user_data(usr)
         
@@ -364,6 +370,44 @@ class UI(ctk.CTk):
 
             self.graphspace.upd(ndate=sdate, ndays=ddays)
             self.currd.configure(text="Curently Displaying: {} thru {}".format(sdate, edate))
+        def addx():
+            self.add_btn.grid_forget()
+            self.addentry.grid(row=0,column=0,padx=5,columnspan=2)
+            self.addcnf.grid(row=1,column=0,padx=5)
+            self.addcanc.grid(row=1,column=1,padx=5)
+
+        def add_cnf():
+            global TRDX
+            self.add_btn.grid(row=0,column=0,padx=5,columnspan=2)
+            tname = self.addentry.get()
+            txr = yf.Ticker(tname)
+
+            if tname in TRDX.keys():
+                print("already added")
+            elif txr.info["quoteType"] == "NONE":
+                print("invalid name")
+            elif txr.info["financialCurrency"] != "INR":
+                print("not indian stock")
+            else:
+                add_tickers(usr,sdate,ddays,tname)
+                self.addentry.delete(0,200)
+                TRDX = get_tickers(usr)
+                self.lddict[tname] = tradable(tname,sdate,ddays,True)
+                self.btndict[tname]= tab(self.leftframe, tname, self.lddict[tname]["Close"].iloc[0].round(3), self.lddict[tname]["D%"].iloc[0].round(1))
+                self.btndict[tname].tradbutton.configure(command=partial(Trade, tname))
+                self.btndict[tname].pack(anchor="w",pady=(0,1))
+                print(self.lddict)
+            # addentry.delete(0,tk.END)
+
+            self.addentry.grid_forget()
+            self.addcnf.grid_forget()
+            self.addcanc.grid_forget()
+
+        def add_canc():
+            self.add_btn.grid(row=0,column=0,padx=5,columnspan=2)
+            self.addentry.grid_forget()
+            self.addcnf.grid_forget()
+            self.addcanc.grid_forget()
 
         def buy():
             self.buy.configure(height=24,text="Confirm?",font=("Helvetica",15,"bold"), command=partial(confirm, "buy"))
@@ -432,14 +476,24 @@ class UI(ctk.CTk):
             self.configure(text=self.tokenledger["amt"].sum())
             
             self.shares.configure(text=self.tokenledger["qty"].sum().round(2))
-            self.netval.configure(text=str(round(self.lddict[xcode]["Close"].iloc[0]*self.userledger[self.userledger["token"]==xcode]["qty"].sum(),2))+"USD")
+            self.netval.configure(text=str(round(self.lddict[xcode]["Close"].iloc[0]*self.userledger[self.userledger["token"]==xcode]["qty"].sum(),2))+"INR")
             
             self.botrightfill()
             
             
         self.leftframe = ctk.CTkScrollableFrame(self, width=tw, height=720, corner_radius=0,fg_color="#2d303e")
         self.tlable = ctk.CTkLabel(self.leftframe, text="Tradables",height=48, width=tw+2, font=("Arial", 20),bg_color="#2b2b2b").pack()
-        for i in TRDX:
+        
+
+        self.add_frame = ctk.CTkFrame(master=self.leftframe, width=3*bw,height=48)
+        self.add_btn = ctk.CTkButton(self.add_frame, text=None,image=images["add"], width=2*bw+48, height=48, corner_radius=10, fg_color="#202020", command=addx)
+        self.addentry = ctk.CTkEntry(self.add_frame, width=2*bw+48-1, height=24, placeholder_text="Enter <STOCK>.NS or <STOCK>.BO", fg_color="#202020")
+        self.addcnf = ctk.CTkButton(self.add_frame, text="Add",width=bw, height=24, command=add_cnf)
+        self.addcanc = ctk.CTkButton(self.add_frame, text="Cancel",width=bw, height=24, command=add_canc)
+        self.add_btn.grid(row=0,column=0,padx=5,columnspan=2)
+        self.add_frame.pack()
+        
+        for i in TRDX.index:
             self.btndict[i]= tab(self.leftframe, i, self.lddict[i]["Close"].iloc[0].round(3), self.lddict[i]["D%"].iloc[0].round(1))
         for i in self.btndict:
             self.btndict[i].tradbutton.configure(command=partial(Trade, i))
@@ -460,10 +514,10 @@ class UI(ctk.CTk):
         self.currd = ctk.CTkLabel(self,text="Curently Displaying: {} thru {}".format(sdate, edate), fg_color="#000", width=rfw//2+2, height=6, anchor="w",padx=5)
         
         self.toprightframe = ctk.CTkFrame(self, width=rfw, height=360, corner_radius=0,fg_color="#2d303e")
-        self.trf_name = ctk.CTkLabel(self.toprightframe, text=TRDX[xcode],width=rfw, height=24,anchor="w", bg_color="#0d1016",pady=10,padx=5)
+        self.trf_name = ctk.CTkLabel(self.toprightframe, text=TRDX.loc[xcode,"name"],width=rfw, height=24,anchor="w", bg_color="#0d1016",pady=10,padx=5)
         self.trf_code = ctk.CTkLabel(self.toprightframe, font=("Helvetica",15),text=xcode, width=rfw ,height=24,anchor="w", bg_color="#151928",pady=10, padx=5)
-        self.trf_curr = ctk.CTkLabel(self.toprightframe,text="$ "+str(self.lddict[xcode]["Close"].iloc[0].round(3)), font=("Helvetica",30,"bold"),width=rfw//2 ,height=48,anchor="w", bg_color="#212533",pady=18,padx=5)
-        self.trf_d = ctk.CTkLabel(self.toprightframe,text=str(self.lddict[xcode]["D"].iloc[0].round(3))+" USD",width=rfw//2 ,height=24,anchor="e", bg_color="#212533",pady=10,padx=5)
+        self.trf_curr = ctk.CTkLabel(self.toprightframe,text="₹ "+str(self.lddict[xcode]["Close"].iloc[0].round(3)), font=("Helvetica",30,"bold"),width=rfw//2 ,height=48,anchor="w", bg_color="#212533",pady=18,padx=5)
+        self.trf_d = ctk.CTkLabel(self.toprightframe,text=str(self.lddict[xcode]["D"].iloc[0].round(3))+" INR",width=rfw//2 ,height=24,anchor="e", bg_color="#212533",pady=10,padx=5)
         self.trf_dperc = ctk.CTkLabel(self.toprightframe,text=str(self.lddict[xcode]["D%"].iloc[0].round(3))+"%",width=rfw//2 ,height=24,anchor="e", bg_color="#212533",pady=10,padx=5)
         self.buy = ctk.CTkButton(self.toprightframe, text="Buy",font=("Helvetica",35,"bold"), width=rfw//2,fg_color="#1f9358", height=48, command=buy)
         self.sell = ctk.CTkButton(self.toprightframe, text="Sell",font=("Helvetica",35,"bold"), width=rfw//2,fg_color="#e04d5c", height=48, command=sell)
@@ -490,11 +544,11 @@ class UI(ctk.CTk):
         self.lclosev = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Close"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24)
     
     
-        self.shares = ctk.CTkLabel(self.toprightframe, text="$Shares", fg_color="#1c2951",justify="center", width=rfw//2, height=48)
-        self.netval = ctk.CTkLabel(self.toprightframe, text="$Net Value", fg_color="#142e61",justify="center", width=rfw//2, height=48)
+        self.shares = ctk.CTkLabel(self.toprightframe, text="₹Shares", fg_color="#1c2951",justify="center", width=rfw//2, height=48)
+        self.netval = ctk.CTkLabel(self.toprightframe, text="₹Net Value", fg_color="#142e61",justify="center", width=rfw//2, height=48)
         
         self.shares.configure(text=str(self.tokenledger["qty"].sum()))
-        self.netval.configure(text=str(round(self.lddict[xcode]["Close"].iloc[0]*self.userledger[self.userledger["token"]==xcode]["qty"].sum(),2))+"USD")
+        self.netval.configure(text=str(round(self.lddict[xcode]["Close"].iloc[0]*self.userledger[self.userledger["token"]==xcode]["qty"].sum(),2))+"INR")
         
         self.toprightframe.place(x=1240-tw,y=0)
         
@@ -579,9 +633,9 @@ class UI(ctk.CTk):
         
         self.tradabluserdata = []
         
-        for code in TRDX:
+        for code in TRDX.index:
             code_label = ctk.CTkLabel(self.pfuscroll, text=code,fg_color="#000022", width=upw)
-            trdx_label = ctk.CTkLabel(self.pfuscroll, text=TRDX[code],fg_color="#000044", width=upw*2)
+            trdx_label = ctk.CTkLabel(self.pfuscroll, text=TRDX.loc[code,"name"],fg_color="#000044", width=upw*2)
             qty_label = ctk.CTkLabel(self.pfuscroll, text=self.userledger[self.userledger["token"] == code]["qty"].sum(),fg_color="#000066", width=upw)
             value_label = ctk.CTkLabel(self.pfuscroll, text=round(self.userledger[self.userledger["token"] == code]["qty"].sum() * self.lddict[code]["Close"].iloc[0], 3),fg_color="#000088", width=upw)
             pl_label = ctk.CTkLabel(self.pfuscroll, text=round(self.userledger[self.userledger["token"] == code]["qty"].sum() * self.lddict[code]["Close"].iloc[0] - self.userledger[self.userledger["token"] == code]["amt"].sum(), 3),fg_color="#0000aa", width=upw)
@@ -615,7 +669,7 @@ class UI(ctk.CTk):
             code_label = ctk.CTkLabel(self.pflscroll, text=xledger.data['token'].iloc[i],fg_color="#000048",width=lpw)
             units_label = ctk.CTkLabel(self.pflscroll, text=abs(xledger.data['qty'].iloc[i]),fg_color="#000060",width=lpw)
             price_label = ctk.CTkLabel(self.pflscroll, text=xledger.data['price'].iloc[i].round(3),fg_color="#000072",width=lpw)
-            action_label = ctk.CTkLabel(self.pflscroll, text="$BuySell",fg_color="#000084", width=lpw)
+            action_label = ctk.CTkLabel(self.pflscroll, text="₹BuySell",fg_color="#000084", width=lpw)
             liqchange_label = ctk.CTkLabel(self.pflscroll, text= (-xledger.data["amt"].iloc[i].round(3)),fg_color="#000096",width=lpw)
             
             
