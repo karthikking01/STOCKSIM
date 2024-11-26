@@ -26,7 +26,13 @@ from datetime import datetime, timedelta
 import sys
 
 TRDX = None
-datelist = pd.read_csv("Stocksim/plot/data/datelist.csv", header=None)[0].tolist()
+
+
+datelist = pd.read_csv("Stocksim/plot/data/datelist.csv", header=None, parse_dates=[0])
+datelist[0] = pd.to_datetime(datelist[0], format="%d/%m/%y").dt.date
+datelist = datelist[0].tolist()
+
+
 xledger = ledger("Stocksim/plot/data/ledger.csv")
 xcode = None
 ddays = 21
@@ -241,14 +247,18 @@ class UI(ctk.CTk):
             self.trf_dperc.configure(text_color="#e04d5c")
             self.trf_d.configure(text_color="#e04d5c")
 
-    def movedays(self,date:datetime.date, ndays=21, isforward=True):
+    def movedays(self,date:datetime.date, ndays=21):
         
         global xcode, ddays, edate, sdate, bw, tw,play, loopid
 
+        if date > datelist[-1] or date < datelist[0]-timedelta(5):
+            print("Date out of range")
+            return
 
         if play:
             if date == "exit":
                 self.destroy()
+
 
             ddays = ndays
             sdate = date
@@ -277,7 +287,7 @@ class UI(ctk.CTk):
             except:
                 pass
 
-            loopid = self.after(itertime,partial(self.movedays,datelist[datelist.index(str(sdate))+1]))
+            loopid = self.after(itertime,partial(self.movedays,datelist[(datelist.index(sdate))+1]))
             print(sdate,edate, itertime)
     
     
@@ -318,24 +328,39 @@ class UI(ctk.CTk):
                     msg = mb.showerror(title="Error", message="No user named {}, Do you want to create one?".format(usr), icon="info", type=mb.YESNO)
                     
                     if msg == "yes" and len(pwd)>5:
-                        self.loginw.destroy()
                         with open("Stocksim/plot/data/userdata.csv","a") as file:
-                            file.write("{},{},{},{},\n".format(usr,edate,pwd,10000))
+                            file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,"2015-01-02",None,21,5000,10000))
+                        with open("Stocksim/plot/data/tickers.csv","a") as file:
+                            file.write("{},{},{}".format(usr,"SBIN.NS","State Bank of India"))
                         self.login()
                     else:
                         mb.showerror(title="Error", message="Create a stronger password!".format(usr), icon="info", type=mb.OK)
                     
-                        
+        
         self.login_form = ctk.CTkFrame(self, width=300, height=200)           
         self.usren = ctk.CTkEntry(self.login_form, width=200, height=32, placeholder_text="Username")
         self.pwden = ctk.CTkEntry(self.login_form, width=200, height=32, placeholder_text="Password", show="*")
+        self.title1 = ctk.CTkLabel(self.login_form, text="Welcome To", font=("Roboto", 20))
+        self.title2 = ctk.CTkLabel(self.login_form, text="Interactive Indian Stock Broker Simulator", font=("Roboto", 30))
+        self.title3 = ctk.CTkLabel(self.login_form, text="Login to continue", font=("Roboto", 15))
         self.loginbtn = ctk.CTkButton(self.login_form, text="Login", width=100, height=32, command=partial(loginx,None))
 
         self.pwden.bind("<Return>", command=loginx)
         
-        self.usren.grid(row=0,column=0,pady=10)
-        self.pwden.grid(row=1,column=0,pady=10)
-        self.loginbtn.grid(row=2,column=0,pady=10)
+        self.title1.grid(row=0,column=0,pady=10)
+        self.title2.grid(row=1,column=0,pady=10)
+        self.title3.grid(row=2,column=0,pady=10)
+        self.usren.grid(row=3,column=0,pady=10)
+        self.pwden.grid(row=4,column=0,pady=10)
+        self.loginbtn.grid(row=5,column=0,pady=10)
+
+        # self.login_form.place(relx=0.5,rely=0.5,anchor="center")
+        # self.login_form.pack(pady=20, padx=20)
+        # self.login_form.pack_propagate(False)
+        # self.login_form.grid(row=0,column=0,pady=10)
+        # self.usren.grid(row=0,column=0,pady=10)
+        # self.pwden.grid(row=1,column=0,pady=10)
+        # self.loginbtn.grid(row=2,column=0,pady=10)
         
         self.login_form.place(relx=0.5,rely=0.5,anchor="center")
         
