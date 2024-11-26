@@ -28,12 +28,12 @@ import sys
 TRDX = None
 
 
-datelist = pd.read_csv("Stocksim/plot/data/datelist.csv", header=None, parse_dates=[0])
+datelist = pd.read_csv("bin/plot/data/datelist.csv", header=None, parse_dates=[0])
 datelist[0] = pd.to_datetime(datelist[0], format="%d/%m/%y").dt.date
 datelist = datelist[0].tolist()
 
 
-xledger = ledger("Stocksim/plot/data/ledger.csv")
+xledger = ledger("bin/plot/data/ledger.csv")
 xcode = None
 ddays = 21
 sdate = datetime(2000,1,3).date()
@@ -51,11 +51,11 @@ tasv = 0
 tval = None
 loopid = None
 
-images = {"home":ctk.CTkImage(light_image=Image.open("Stocksim/plot/data/images/home.png"),dark_image=Image.open("Stocksim/plot/data/images/home.png"),size=(25,25)), "pf":ctk.CTkImage(dark_image=Image.open("Stocksim/plot/data/images/pf.png"),size=(25,25)),"add":ctk.CTkImage(dark_image=Image.open("Stocksim/plot/data/images/add.png"),size=(25,25))}
+images = {"home":ctk.CTkImage(light_image=Image.open("bin/plot/data/images/home.png"),dark_image=Image.open("bin/plot/data/images/home.png"),size=(25,25)), "pf":ctk.CTkImage(dark_image=Image.open("bin/plot/data/images/pf.png"),size=(25,25)),"add":ctk.CTkImage(dark_image=Image.open("bin/plot/data/images/add.png"),size=(25,25))}
 def save():
     if usr is not None:
         xledger.save_to_csv()
-        with open("Stocksim/plot/data/userdata.csv","a") as file:
+        with open("bin/plot/data/userdata.csv","a") as file:
             file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,sdate,edate,ddays,itertime,liq))
         sys.exit()
         
@@ -328,9 +328,9 @@ class UI(ctk.CTk):
                     msg = mb.showerror(title="Error", message="No user named {}, Do you want to create one?".format(usr), icon="info", type=mb.YESNO)
                     
                     if msg == "yes" and len(pwd)>5:
-                        with open("Stocksim/plot/data/userdata.csv","a") as file:
+                        with open("bin/plot/data/userdata.csv","a") as file:
                             file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,"2015-01-02",None,21,5000,10000))
-                        with open("Stocksim/plot/data/tickers.csv","a") as file:
+                        with open("bin/plot/data/tickers.csv","a") as file:
                             file.write("{},{},{}".format(usr,"SBIN.NS","State Bank of India"))
                         self.login()
                     else:
@@ -750,7 +750,3 @@ class UI(ctk.CTk):
 
         del txn_id_label, date_label, user_label, code_label, units_label, price_label, action_label, liqchange_label, rown
 
-if __name__ == "__main__":
-    app = UI()
-    app.protocol("WM_DELETE_WINDOW", save)
-    app.mainloop()

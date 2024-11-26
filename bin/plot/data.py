@@ -2,7 +2,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import *
 
-datelist = pd.read_csv("Stocksim/plot/data/datelist.csv", header=None)[0].tolist()
+datelist = pd.read_csv("bin/plot/data/datelist.csv", header=None)[0].tolist()
 
 binance_dark = {
     "base_mpl_style": "dark_background",
@@ -34,7 +34,7 @@ binance_dark = {
 }
     
 def get_tickers(usr):
-    x = pd.read_csv("Stocksim/plot/data/tickers.csv",header=None, index_col=0, names=["ticker","name"])
+    x = pd.read_csv("bin/plot/data/tickers.csv",header=None, index_col=0, names=["ticker","name"])
     x = x[x.index == usr]
     x.index = x["ticker"]
     del x["ticker"]
@@ -43,12 +43,12 @@ def get_tickers(usr):
 
 def add_tickers(usr,sdate,ndays,ticker):
     tickername = str(yf.Ticker(ticker).info["longName"]).replace("Limited","Ltd.")
-    with open("Stocksim/plot/data/tickers.csv", "a") as f:
+    with open("bin/plot/data/tickers.csv", "a") as f:
         f.write("{},{},{}\n".format(usr,ticker,tickername))
 
 
 def get_config(usr,pwd):
-    x = pd.read_csv("Stocksim/plot/data/userdata.csv", names=["pwd","sdate","edate","ndays","itertime","liq"], index_col=0)
+    x = pd.read_csv("bin/plot/data/userdata.csv", names=["pwd","sdate","edate","ndays","itertime","liq"], index_col=0)
     x["sdate"] = pd.to_datetime(x["sdate"], format='%Y-%m-%d')
     x["edate"] = pd.to_datetime(x["edate"], format='%Y-%m-%d')
     # print(x[x["usr"]==usr]["pwd"].values[0])
@@ -64,11 +64,11 @@ def get_config(usr,pwd):
 
 def lff(name,sdate,dnrows):
     """Loads Data from file ranging from sdate to sdate+dnrows"""
-    with open("Stocksim/plot/data/{}.csv".format(name), "r") as f:
+    with open("bin/plot/data/{}.csv".format(name), "r") as f:
         for count, l in enumerate(f): #count number of iterations ie lines moved
             # print(str(l).startswith(str(sdate)))
             if str(l).startswith(str(sdate)):# if line starts with sdate
-                df = pd.read_csv("Stocksim/plot/data/{}.csv".format(name),header=None,index_col=0,skiprows=count,nrows=int(dnrows)) #skip number of lines equal to count and read dnrows lines
+                df = pd.read_csv("bin/plot/data/{}.csv".format(name),header=None,index_col=0,skiprows=count,nrows=int(dnrows)) #skip number of lines equal to count and read dnrows lines
                 df.index = pd.to_datetime(df.index, format='%Y-%m-%d') # convert index to datetime
                 df.index.name=None # removing index name
                 df.columns = ["Open","High","Low","Close","Volume"] # renaming index columns to simpler ones
@@ -85,10 +85,10 @@ def lff(name,sdate,dnrows):
 
 
 def loadhistory(name, edate):
-    with open("Stocksim/plot/data/{}.csv".format(name), "r") as f:
+    with open("bin/plot/data/{}.csv".format(name), "r") as f:
         for count, l in enumerate(f): #count number of iterations ie lines moved
             if str(l).startswith(str(edate)): # if line starts with sdate
-                df = pd.read_csv("Stocksim/plot/data/{}.csv".format(name),header=None,index_col=0,nrows=count+1) #read number of lines equal to count and read dnrows lines
+                df = pd.read_csv("bin/plot/data/{}.csv".format(name),header=None,index_col=0,nrows=count+1) #read number of lines equal to count and read dnrows lines
                 df.index = pd.to_datetime(df.index, format='%Y-%m-%d') # convert index to datetime
                 df.index.name=None # removing index name
                 df.columns = ["Open","High","Low","Close","Volume"] # renaming index columns to simpler ones
@@ -108,7 +108,7 @@ def lfw(name):
         zeroindex = datelist[datelist.index("2015-01-02"):datelist.index(finalindex)]
         zdf = pd.DataFrame(0,columns=["Open","High","Low","Close","Volume"],index=zeroindex)
         x = pd.concat([zdf,x])
-    x.to_csv("Stocksim/plot/data/{}.csv".format(name),header=False)
+    x.to_csv("bin/plot/data/{}.csv".format(name),header=False)
     del x
     
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     # test=tradable("TCS.NS",date(2000,1,15), 21, False)
     # x = test
     # print(x)
-    # l = ledger(file="Stocksim/plot/data/ledger.csv")
+    # l = ledger(file="bin/plot/data/ledger.csv")
     # l.txn(date(2000,1,15),"user1","ASBL",100,1)
     # l.txn(date(2000,1,15),"user1","ASBL",100,-1)
     # token_data=l.fetch_token_data("user1","TCS.NS")
