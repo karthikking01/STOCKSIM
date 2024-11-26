@@ -68,7 +68,7 @@ def lff(name,sdate,dnrows):
         for count, l in enumerate(f): #count number of iterations ie lines moved
             # print(str(l).startswith(str(sdate)))
             if str(l).startswith(str(sdate)):# if line starts with sdate
-                df = pd.read_csv("Stocksim/plot/data/{}.csv".format(name),header=None,index_col=0,skiprows=count,nrows=dnrows) #skip number of lines equal to count and read dnrows lines
+                df = pd.read_csv("Stocksim/plot/data/{}.csv".format(name),header=None,index_col=0,skiprows=count,nrows=int(dnrows)) #skip number of lines equal to count and read dnrows lines
                 df.index = pd.to_datetime(df.index, format='%Y-%m-%d') # convert index to datetime
                 df.index.name=None # removing index name
                 df.columns = ["Open","High","Low","Close","Volume"] # renaming index columns to simpler ones
@@ -76,7 +76,12 @@ def lff(name,sdate,dnrows):
                 df["D%"] = df["D"]/df["Open"]*100 # perc change
                 # df["height"] = df["High"]-df["Low"] # height
                 break
+    try:
         return df
+    except UnboundLocalError:
+        nextday = datetime.strptime(str(sdate),"%Y-%m-%d")+timedelta(days=1)
+        nextday = nextday.strftime("%Y-%m-%d")
+        return lff(name,nextday,dnrows)
 
 
 def loadhistory(name, edate):
@@ -161,5 +166,5 @@ if __name__ == "__main__":
     # token_data=l.fetch_token_data("user1","TCS.NS")
     # get_config("admin","admin01")
     print(get_tickers("user"))
-    trx = tradable("TATAMOTORS.NS",date(2000,1,3),21)
+    trx = tradable("TATAMOTORS.NS",date(2015,1,3),21)
     print(trx)

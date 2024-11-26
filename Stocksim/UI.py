@@ -43,6 +43,7 @@ liq = None
 play = True
 tasv = 0
 tval = None
+loopid = None
 
 images = {"home":ctk.CTkImage(light_image=Image.open("Stocksim/plot/data/images/home.png"),dark_image=Image.open("Stocksim/plot/data/images/home.png"),size=(25,25)), "pf":ctk.CTkImage(dark_image=Image.open("Stocksim/plot/data/images/pf.png"),size=(25,25)),"add":ctk.CTkImage(dark_image=Image.open("Stocksim/plot/data/images/add.png"),size=(25,25))}
 def save():
@@ -233,9 +234,18 @@ class UI(ctk.CTk):
         self.llowv.configure(text=self.lddict[xcode]["Low"].iloc[0].round(3))
         self.lclosev.configure(text=self.lddict[xcode]["Close"].iloc[0].round(3))
 
-    def movedays(self,date, ndays=21, isforward=True):
+        if self.lddict[xcode]["D"].iloc[0] > 0:
+            self.trf_dperc.configure(text_color="#1f9358")
+            self.trf_d.configure(text_color="#1f9358")
+        else:
+            self.trf_dperc.configure(text_color="#e04d5c")
+            self.trf_d.configure(text_color="#e04d5c")
+
+    def movedays(self,date:datetime.date, ndays=21, isforward=True):
         
-        global xcode, ddays, edate, sdate, bw, tw,play
+        global xcode, ddays, edate, sdate, bw, tw,play, loopid
+
+
         if play:
             if date == "exit":
                 self.destroy()
@@ -261,7 +271,13 @@ class UI(ctk.CTk):
                 self.btndict[i].upd(self.lddict[i]["Close"].iloc[0].round(1), self.lddict[i]["D%"].iloc[0].round(1))
             self.toprightfill()
             self.currd.configure(text="Curently Displaying: {} thru {}".format(sdate, edate))
-            self.after(itertime,partial(self.movedays,datelist[datelist.index(str(sdate))+1]))
+
+            try:
+                self.after_cancel(loopid)
+            except:
+                pass
+
+            loopid = self.after(itertime,partial(self.movedays,datelist[datelist.index(str(sdate))+1]))
             print(sdate,edate, itertime)
     
     
@@ -442,6 +458,8 @@ class UI(ctk.CTk):
                 elif what == "sell":
                     if float(nstock) > float(self.tokenledger["qty"].sum()):
                         mb.showerror(title="Error", message="Not enough Shares to sell", icon="info", type=mb.OK)
+                    elif sdate < self.userledger[self.userledger["token"]==xcode]["date"].iloc[0]:
+                        mb.showerror(title="Error", message="You can't sell before buying", icon="info", type=mb.OK)
                     else:
                         sell_buy_update(self.lddict[xcode]["Close"].iloc[0], -float(nstock))
             elif float(nstock)==0:
@@ -558,9 +576,15 @@ class UI(ctk.CTk):
         rbw = tw+20
         self.botrightframe = ctk.CTkFrame(self, width=rbw, height=300, corner_radius=0, fg_color="#151928",border_color="#fff",border_width=1)
         self.botrightscrollable = ctk.CTkScrollableFrame(self.botrightframe, width=rbw, height=360, corner_radius=0, fg_color="#151928")        
+
         self.botrightfill()
         self.botrightscrollable.pack()
         self.botrightframe.place(x=1280-tw-40,y=400)
+
+        self.calentry = ctk.CTkEntry(self, width=tw//2+2, height=6, placeholder_text="Enter Date DD/MM/YYYY", border_width=1, border_color="#000")
+        self.ndaysentry = ctk.CTkEntry(self, width=tw//2+2, height=6, placeholder_text="Enter Number of Days", border_width=1, border_color="#000")
+        self.ndaysentry.insert(0,str(ddays)+" Days")
+        self.go = ctk.CTkButton(self,text="Go",height=48,width=48,command=lambda: self.movedays(datetime.strptime(self.calentry.get(),"%d/%m/%Y").date(), self.ndaysentry.get().split(" ")[0]))
         
         self.histbtn = ctk.CTkButton(self, text="Show History", font=("Helvetica", 20, "bold"), width=rfw//2, height=48, corner_radius=0, fg_color="#1c2951", command=partial(self.graphspace.show_history,self))
         self.histbtn.place(x=1240-tw*2.5,y=555)
@@ -592,6 +616,10 @@ class UI(ctk.CTk):
         self.currd.place(x=20+tw,y=48)
         self.leftframe.place(x=60,y=0)
         self.topbar.place(x=60+tw,y=0)
+
+        self.calentry.place(x=300+tw,y=660)
+        self.ndaysentry.place(x=300+tw,y=684)
+        self.go.place(x=300+tw+tw//2+2,y=660)
         # self.prev.place(x=1280-500,y=0)
         # self.next.place(x=1280-80-500,y=0)
         self.movedays(date=sdate)
