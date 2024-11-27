@@ -12,7 +12,7 @@ binance_dark = {
         "wick": {"up": "#3dc985", "down": "#ef4f60"},  
         "ohlc": {"up": "green", "down": "red"},
         "volume": {"up": "#247252", "down": "#82333f"},  
-        "vcedge": {"up": "green", "down": "red"},  
+        "vcedge": {"up": "green", "down": "red"},                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
         "vcdopcod": False,
         "alpha": 1
     },
@@ -168,3 +168,40 @@ if __name__ == "__main__":
     print(get_tickers("user"))
     trx = tradable("TATAMOTORS.NS",date(2015,1,3),21)
     print(trx)
+    """
+    Folder PATH listing for volume Stuff
+Volume serial number is 5AF8-5DA4
+
+STOCKSIM
+|   main.py
+|   
+\---bin
+    |   requirements.txt
+    |   UI.py
+    |   
+    \---plot
+        |   data.py
+        |   
+        \---data
+            |   datelist.csv
+            |   tickers.csv
+            |   userdata.csv
+            |   ledger.csv
+            |   AXISBANK.BO.csv
+            |   BEL.NS.csv
+            |   BPCL.NS.csv
+            |   HDFCBANK.BO.csv
+            |   ICICIBANK.BO.csv
+            |   JSWSTEEL.NS.csv
+            |   LT.NS.csv
+            |   ONGC.NS.csv
+            |   SBIN.NS.csv
+            |   SHRIRAMFIN.NS.csv
+            |   ZOMATO.BO.csv
+            |   
+            \---images
+                    add.png
+                    home.png
+                    pf.png
+                    
+    """
