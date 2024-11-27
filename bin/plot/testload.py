@@ -11,5 +11,6 @@ import datetime
 tk = yf.Ticker("SBIN.NS")
 x = pd.DataFrame(tk.history(period="max"))
 x.index = [d.strftime('%Y-%m-%d') for d in x.index.date]
-x = x.drop(columns=["Dividends","Stock Splits"]).loc["2000-01-03":]
-x.to_csv("Stocksim/plot/data/{}.csv".format(i),header=False)
+x = x.drop(columns=["Dividends","Stock Splits"]).loc["2010-01-01":]
+x = x.index.to_series()
+x.to_csv("bin/plot/data/datelist.csv", index=False, header=None)

@@ -13,7 +13,7 @@ k) at every 10 second update the price according to the data (ie simulate actual
 
 www.16colo.rs
 """
-from plot.data import *
+from bin.plot.data import *
 import mplfinance as mpf
 from functools import partial
 import customtkinter as ctk
@@ -196,10 +196,10 @@ class UI(ctk.CTk):
 
         for i in list(self.tokenledger.index):
             date_label = ctk.CTkLabel(self.botrightscrollable, text=self.tokenledger.loc[i, 'date'], font=("font77", 10), width=rbw//6, padx=5,fg_color="#000022")
-            token_label = ctk.CTkLabel(self.botrightscrollable, text=self.tokenledger.loc[i, 'token'], font=("font77", 10), width=rbw//6,fg_color="#000033")
-            price_label = ctk.CTkLabel(self.botrightscrollable, text=self.tokenledger.loc[i, 'price'].round(2), font=("font77", 11), width=rbw//6,fg_color="#000044")
-            qty_label = ctk.CTkLabel(self.botrightscrollable, text=abs(self.tokenledger.loc[i, 'qty'].round(2)), font=("font77", 11), width=rbw//6,fg_color="#000055")
-            amt_label = ctk.CTkLabel(self.botrightscrollable, text=self.tokenledger.loc[i, 'amt'].round(2), font=("font77", 11), width=rbw//6,fg_color="#000066")
+            token_label = ctk.CTkLabel(self.botrightscrollable, text=self.tokenledger.loc[i, 'token'], font=("font77", 7), width=rbw//6,fg_color="#000033")
+            price_label = ctk.CTkLabel(self.botrightscrollable, text=self.tokenledger.loc[i, 'price'].round(2), font=("font77", 10), width=rbw//6,fg_color="#000044")
+            qty_label = ctk.CTkLabel(self.botrightscrollable, text=abs(self.tokenledger.loc[i, 'qty'].round(2)), font=("font77", 10), width=rbw//6,fg_color="#000055")
+            amt_label = ctk.CTkLabel(self.botrightscrollable, text=self.tokenledger.loc[i, 'amt'].round(2), font=("font77", 10), width=rbw//6,fg_color="#000066")
             buy_sell_label = ctk.CTkLabel(self.botrightscrollable,text="₹buysell", font=("font77", 11), width=rbw//6,fg_color="#000077")
             if self.tokenledger.loc[i, 'qty'] > 0:
                 buy_sell_label.configure(text="Buy", text_color="#3dc985")
@@ -294,6 +294,23 @@ class UI(ctk.CTk):
     def login(self):
         global xcode, ddays, edate, sdate, bw, tw, usr, pwd, liq
 
+        self.login_form = ctk.CTkFrame(self, width=300)           
+        self.usren = ctk.CTkEntry(self.login_form, width=150, height=32, placeholder_text="Username")
+        self.pwden = ctk.CTkEntry(self.login_form, width=150, height=32, placeholder_text="Password", show="*")
+        self.title1 = ctk.CTkLabel(self.login_form, text="Welcome To",text_color="#4c4c4c", font=("Roboto", 10))
+        self.title2 = ctk.CTkLabel(self.login_form, text="STOCKSIM", font=("Roboto", 30))
+        self.title3 = ctk.CTkLabel(self.login_form, text="Login to continue", font=("Roboto", 15))
+        self.loginbtn = ctk.CTkButton(self.login_form, text="Login", width=100, height=32)
+
+        self.title1.grid(row=0,column=0)
+        self.title2.grid(row=1,column=0, padx=10,pady=(0,20))
+        self.title3.grid(row=2,column=0)
+        self.usren.grid(row=3,column=0)
+        self.pwden.grid(row=4,column=0)
+        self.loginbtn.grid(row=5,column=0)
+        
+        
+        
         def loginx(event): # Event for bind 
             global xcode, ddays, edate, sdate, bw, tw, usr, pwd, liq, tasv, tval, itertime, TRDX
             usr = self.usren.get()
@@ -315,10 +332,6 @@ class UI(ctk.CTk):
                     print(TRDX)
                     self.home()
                     
-                    for i in self.login_form.winfo_children():
-                        del i
-                    del self.login_form
-                    
                     self.iconframe.place(x=0,y=0)
                     self.homeicon.place(x=0,y=0)
                     self.portficon.place(x=0,y=60)
@@ -329,42 +342,27 @@ class UI(ctk.CTk):
                     
                     if msg == "yes" and len(pwd)>5:
                         with open("bin/plot/data/userdata.csv","a") as file:
-                            file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,"2015-01-02",None,21,5000,10000))
+                            file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,"2010-01-04",None,21,5000,10000))
                         with open("bin/plot/data/tickers.csv","a") as file:
                             file.write("{},{},{}".format(usr,"SBIN.NS","State Bank of India"))
                         self.login()
                     else:
                         mb.showerror(title="Error", message="Create a stronger password!".format(usr), icon="info", type=mb.OK)
+                        
+                        
                     
-        
-        self.login_form = ctk.CTkFrame(self, width=300, height=200)           
-        self.usren = ctk.CTkEntry(self.login_form, width=200, height=32, placeholder_text="Username")
-        self.pwden = ctk.CTkEntry(self.login_form, width=200, height=32, placeholder_text="Password", show="*")
-        self.title1 = ctk.CTkLabel(self.login_form, text="Welcome To", font=("Roboto", 20))
-        self.title2 = ctk.CTkLabel(self.login_form, text="Interactive Indian Stock Broker Simulator", font=("Roboto", 30))
-        self.title3 = ctk.CTkLabel(self.login_form, text="Login to continue", font=("Roboto", 15))
-        self.loginbtn = ctk.CTkButton(self.login_form, text="Login", width=100, height=32, command=partial(loginx,None))
-
         self.pwden.bind("<Return>", command=loginx)
-        
-        self.title1.grid(row=0,column=0,pady=10)
-        self.title2.grid(row=1,column=0,pady=10)
-        self.title3.grid(row=2,column=0,pady=10)
-        self.usren.grid(row=3,column=0,pady=10)
-        self.pwden.grid(row=4,column=0,pady=10)
-        self.loginbtn.grid(row=5,column=0,pady=10)
-
-        # self.login_form.place(relx=0.5,rely=0.5,anchor="center")
-        # self.login_form.pack(pady=20, padx=20)
-        # self.login_form.pack_propagate(False)
-        # self.login_form.grid(row=0,column=0,pady=10)
-        # self.usren.grid(row=0,column=0,pady=10)
-        # self.pwden.grid(row=1,column=0,pady=10)
-        # self.loginbtn.grid(row=2,column=0,pady=10)
-        
+        self.loginbtn.configure(command=partial(loginx,None))
         self.login_form.place(relx=0.5,rely=0.5,anchor="center")
         
     def home(self):
+        try:
+            for i in self.login_form.winfo_children():
+                i.destroy()
+            self.login_form.destroy()
+        except:
+            pass
+        
         try:
             self.portfupperframe.destroy()
             self.portflowerframe.destroy()
@@ -434,7 +432,7 @@ class UI(ctk.CTk):
                 self.addentry.delete(0,200)
                 TRDX = get_tickers(usr)
                 self.lddict[tname] = tradable(tname,sdate,ddays,True)
-                self.btndict[tname]= tab(self.leftframe, tname, self.lddict[tname]["Close"].iloc[0].round(3), self.lddict[tname]["D%"].iloc[0].round(1))
+                self.btndict[tname]= tab(self.leftscroller, tname, self.lddict[tname]["Close"].iloc[0].round(3), self.lddict[tname]["D%"].iloc[0].round(1))
                 self.btndict[tname].tradbutton.configure(command=partial(Trade, tname))
                 self.btndict[tname].pack(anchor="w",pady=(0,1))
                 print(self.lddict)
@@ -483,7 +481,7 @@ class UI(ctk.CTk):
                 elif what == "sell":
                     if float(nstock) > float(self.tokenledger["qty"].sum()):
                         mb.showerror(title="Error", message="Not enough Shares to sell", icon="info", type=mb.OK)
-                    elif sdate < self.userledger[self.userledger["token"]==xcode]["date"].iloc[0]:
+                    elif sdate < datetime.strptime(self.userledger[self.userledger["token"]==xcode]["date"].iloc[0], "%Y-%m-%d").date():
                         mb.showerror(title="Error", message="You can't sell before buying", icon="info", type=mb.OK)
                     else:
                         sell_buy_update(self.lddict[xcode]["Close"].iloc[0], -float(nstock))
@@ -523,13 +521,14 @@ class UI(ctk.CTk):
             
             self.botrightfill()
             
-            
-        self.leftframe = ctk.CTkScrollableFrame(self, width=tw, height=720, corner_radius=0,fg_color="#2d303e")
-        self.tlable = ctk.CTkLabel(self.leftframe, text="Tradables",height=48, width=tw+2, font=("Arial", 20),bg_color="#2b2b2b").pack()
+        self.leftframe = ctk.CTkFrame(self, width=tw, height=720, corner_radius=0,fg_color="#2d303e")
+        self.leftscroller = ctk.CTkScrollableFrame(self.leftframe, width=tw, height=720, corner_radius=0,fg_color="#2d303e")
+        self.leftscroller.pack()
+        self.tlable = ctk.CTkLabel(self.leftscroller, text="Tradables",height=48, width=tw+2, font=("Arial", 20),bg_color="#2b2b2b").pack()
         
 
-        self.add_frame = ctk.CTkFrame(master=self.leftframe, width=3*bw,height=48)
-        self.add_btn = ctk.CTkButton(self.add_frame, text=None,image=images["add"], width=2*bw+48, height=48, corner_radius=10, fg_color="#202020", command=addx)
+        self.add_frame = ctk.CTkFrame(master=self.leftscroller, width=3*bw,height=48)
+        self.add_btn = ctk.CTkButton(self.add_frame, text=None,image=images["add"], width=2*bw+48, height=48, corner_radius=10, fg_color="#242424", command=addx)
         self.addentry = ctk.CTkEntry(self.add_frame, width=2*bw+48-1, height=24, placeholder_text="Enter <STOCK>.NS or <STOCK>.BO", fg_color="#202020")
         self.addcnf = ctk.CTkButton(self.add_frame, text="Add",width=bw, height=24, command=add_cnf)
         self.addcanc = ctk.CTkButton(self.add_frame, text="Cancel",width=bw, height=24, command=add_canc)
@@ -537,7 +536,7 @@ class UI(ctk.CTk):
         self.add_frame.pack()
         
         for i in TRDX.index:
-            self.btndict[i]= tab(self.leftframe, i, self.lddict[i]["Close"].iloc[0].round(3), self.lddict[i]["D%"].iloc[0].round(1))
+            self.btndict[i]= tab(self.leftscroller, i, self.lddict[i]["Close"].iloc[0].round(3), self.lddict[i]["D%"].iloc[0].round(1))
         for i in self.btndict:
             self.btndict[i].tradbutton.configure(command=partial(Trade, i))
             self.btndict[i].pack(anchor="w",pady=(0,1))
@@ -579,7 +578,7 @@ class UI(ctk.CTk):
         self.llow = ctk.CTkLabel(self.toprightframe, text="Low", fg_color="#1d2950", width=rfw//2, height=24,padx=5)
         self.lclose = ctk.CTkLabel(self.toprightframe, text="Close", fg_color="#161929", width=rfw//2, height=24,padx=5)
         self.lshares = ctk.CTkLabel(self.toprightframe, text="Shares",justify="center", fg_color="#1c2951", width=rfw//2, height=24)
-        self.lnetval = ctk.CTkLabel(self.toprightframe, text="Net Value",justify="center", fg_color="#142e61", width=rfw//2, height=24)
+        self.lnetval = ctk.CTkLabel(self.toprightframe, text="Net Value",justify="center", fg_color="#1c2951", width=rfw//2, height=24)
         
         self.lopenv = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Open"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24)
         self.lhighv = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["High"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24)
@@ -587,8 +586,8 @@ class UI(ctk.CTk):
         self.lclosev = ctk.CTkLabel(self.toprightframe, text=self.lddict[xcode]["Close"].iloc[0].round(3), fg_color="#000", width=rfw//2, height=24)
     
     
-        self.shares = ctk.CTkLabel(self.toprightframe, text="₹Shares", fg_color="#1c2951",justify="center", width=rfw//2, height=48)
-        self.netval = ctk.CTkLabel(self.toprightframe, text="₹Net Value", fg_color="#142e61",justify="center", width=rfw//2, height=48)
+        self.shares = ctk.CTkLabel(self.toprightframe, text="₹Shares", fg_color="#1c2971",justify="center", width=rfw//2, height=48)
+        self.netval = ctk.CTkLabel(self.toprightframe, text="₹Net Value", fg_color="#1c2971",justify="center", width=rfw//2, height=48)
         
         self.shares.configure(text=str(self.tokenledger["qty"].sum()))
         self.netval.configure(text=str(round(self.lddict[xcode]["Close"].iloc[0]*self.userledger[self.userledger["token"]==xcode]["qty"].sum(),2))+"INR")
@@ -606,13 +605,21 @@ class UI(ctk.CTk):
         self.botrightscrollable.pack()
         self.botrightframe.place(x=1280-tw-40,y=400)
 
-        self.calentry = ctk.CTkEntry(self, width=tw//2+2, height=6, placeholder_text="Enter Date DD/MM/YYYY", border_width=1, border_color="#000")
-        self.ndaysentry = ctk.CTkEntry(self, width=tw//2+2, height=6, placeholder_text="Enter Number of Days", border_width=1, border_color="#000")
+        self.timecontrolframe = ctk.CTkFrame(self, width=tw+96, height=48, corner_radius=0, fg_color="#151928",border_color="#fff")
+        self.timecontrolable = ctk.CTkLabel(self.timecontrolframe, width=tw+96, height=6,text="Time Controls", fg_color="#151928", font=("Helvetica", 20, "bold"))
+        self.calentry = ctk.CTkEntry(self.timecontrolframe, width=tw//2, height=6, placeholder_text="Enter Date DD/MM/YYYY")
+        self.ndaysentry = ctk.CTkEntry(self.timecontrolframe, width=tw//2, height=6, placeholder_text="Enter Number of Days")
         self.ndaysentry.insert(0,str(ddays)+" Days")
-        self.go = ctk.CTkButton(self,text="Go",height=48,width=48,command=lambda: self.movedays(datetime.strptime(self.calentry.get(),"%d/%m/%Y").date(), self.ndaysentry.get().split(" ")[0]))
-        
-        self.histbtn = ctk.CTkButton(self, text="Show History", font=("Helvetica", 20, "bold"), width=rfw//2, height=48, corner_radius=0, fg_color="#1c2951", command=partial(self.graphspace.show_history,self))
-        self.histbtn.place(x=1240-tw*2.5,y=555)
+        self.go = ctk.CTkButton(self.timecontrolframe,text="Go",height=48,width=48,command=lambda: self.movedays(datetime.strptime(self.calentry.get(),"%d/%m/%Y").date(), self.ndaysentry.get().split(" ")[0]))
+        self.histbtn = ctk.CTkButton(self.timecontrolframe, text="Show History", width=tw//2, height=48, fg_color="#1c2951", command=partial(self.graphspace.show_history,self))
+
+        self.timecontrolable.grid(row=0,column=0, columnspan=3, rowspan=1)
+        self.calentry.grid(row=1,column=0, columnspan=1, rowspan=1)
+        self.ndaysentry.grid(row=2,column=0, columnspan=1, rowspan=1)
+        self.go.grid(row=1,column=1, columnspan=1, rowspan=2)
+        self.histbtn.grid(row=1,column=2, columnspan=1, rowspan=3,padx=(20,0))
+        self.timecontrolframe.place(x=500,y=650)
+
 
         
         self.btndict[xcode].tradbutton.configure(state="disabled")
@@ -641,10 +648,6 @@ class UI(ctk.CTk):
         self.currd.place(x=20+tw,y=48)
         self.leftframe.place(x=60,y=0)
         self.topbar.place(x=60+tw,y=0)
-
-        self.calentry.place(x=300+tw,y=660)
-        self.ndaysentry.place(x=300+tw,y=684)
-        self.go.place(x=300+tw+tw//2+2,y=660)
         # self.prev.place(x=1280-500,y=0)
         # self.next.place(x=1280-80-500,y=0)
         self.movedays(date=sdate)
@@ -658,6 +661,7 @@ class UI(ctk.CTk):
 
         try:
             self.leftframe.destroy()
+            self.timecontrolframe.destroy()
             self.botrightframe.destroy()
             self.toprightframe.destroy()
             self.graphspace.destroy()
@@ -737,7 +741,7 @@ class UI(ctk.CTk):
                 if xledger.data['qty'].iloc[i]>0:
                     j.configure(text_color="#3dc985")
                 else:
-                    j.configure(text_color="##ef4f60")
+                    j.configure(text_color="#ef4f60")
             
             self.txndata.append(rown)
 

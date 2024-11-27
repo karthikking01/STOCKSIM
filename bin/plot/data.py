@@ -100,12 +100,12 @@ def lfw(name):
     tk = yf.Ticker(name) # get ticker (YahooFinance module)
     x = pd.DataFrame(tk.history(period="max"))
     x.index = [d.strftime('%Y-%m-%d') for d in x.index.date]
-    x = x.drop(columns=["Dividends","Stock Splits"]).loc["2015-01-02":]
-    if x.index[0] != "2015-01-02":
+    x = x.drop(columns=["Dividends","Stock Splits"]).loc["2010-01-04":]
+    if x.index[0] != "2010-01-04":
         finalindex = x.index[0]
-        print(datelist.index("2015-01-02"))
-        print(datelist[datelist.index("2015-01-02"):datelist.index(finalindex)])
-        zeroindex = datelist[datelist.index("2015-01-02"):datelist.index(finalindex)]
+        print(datelist.index("2010-01-04"))
+        print(datelist[datelist.index("2010-01-04"):datelist.index(finalindex)])
+        zeroindex = datelist[datelist.index("2010-01-04"):datelist.index(finalindex)]
         zdf = pd.DataFrame(0,columns=["Open","High","Low","Close","Volume"],index=zeroindex)
         x = pd.concat([zdf,x])
     x.to_csv("bin/plot/data/{}.csv".format(name),header=False)
