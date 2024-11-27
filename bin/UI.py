@@ -1,39 +1,24 @@
-"""
-TODO:
-CLI(Text and minimal visuals) based modern looking stock market simulator
-working principal
-1) will fetch week wise stock price over an year or so of about 10 tradables
-2) assign random code to each stock (ADBE, TSLA)
-k) at every 10 second update the price according to the data (ie simulate actual holding of stock but squeeze yearlong waiting period into a few minutes)
-4) allow user to simulate the buying/selling stocks
-5) show percentage loss/profit at end of each week
-6) show the graph of the stock price
-7) have a watchlist
-8) have a portfolio
+from bin.plot.data import *                                     # importing data-related classes and functions
+import mplfinance as mpf                                        # importing mplfinance for candlestick plot
+from functools import partial                                   # importing partial for assigning functions to button
+import customtkinter as ctk                                     # importing customtkinter for GUI widgets
+from PIL import Image                                           # importing PIL for image processing
+import tkinter.messagebox as mb                                 # importing messagebox for displaying messages and error
+import matplotlib.pyplot as plt                                 # importing matplotlib for plotting 
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg # importing FigureCanvasTkAgg for embedding matplotlib plots in tkinter
+from datetime import datetime, timedelta                        # importing datetime for date and time related calculations, conversions and comparisions
+import sys                                                      # importing sys for exiting the program
 
-www.16colo.rs
-"""
-from bin.plot.data import *
-import mplfinance as mpf
-from functools import partial
-import customtkinter as ctk
-from math import *
-from PIL import Image
-import tkinter.messagebox as mb
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from datetime import datetime, timedelta
-import sys
-
-TRDX = None
-
-
+#loading list of trading days excluding holidays as list of dates
 datelist = pd.read_csv("bin/plot/data/datelist.csv", header=None, parse_dates=[0])
 datelist[0] = pd.to_datetime(datelist[0], format="%d/%m/%y").dt.date
 datelist = datelist[0].tolist()
 
-
+#loading all previous transactions
 xledger = ledger("bin/plot/data/ledger.csv")
+
+#declaring global variables for later use
+TRDX = None                                         
 xcode = None
 ddays = 21
 sdate = datetime(2000,1,3).date()
@@ -50,16 +35,20 @@ play = True
 tasv = 0
 tval = None
 loopid = None
-
 images = {"home":ctk.CTkImage(light_image=Image.open("bin/plot/data/images/home.png"),dark_image=Image.open("bin/plot/data/images/home.png"),size=(25,25)), "pf":ctk.CTkImage(dark_image=Image.open("bin/plot/data/images/pf.png"),size=(25,25)),"add":ctk.CTkImage(dark_image=Image.open("bin/plot/data/images/add.png"),size=(25,25))}
+
+
+#defining an exit function
 def save():
     if usr is not None:
         xledger.save_to_csv()
         with open("bin/plot/data/userdata.csv","a") as file:
             file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,sdate,edate,ddays,itertime,liq))
         sys.exit()
-        
+
+#creating a class for candlestick chart which supports on-demand update
 class customcandlestick(ctk.CTkFrame):
+    
     def __init__(self, parent):
         super().__init__(parent)
         global xcode, ddays, edate, sdate, bw, tw
@@ -79,14 +68,12 @@ class customcandlestick(ctk.CTkFrame):
 
     def upd(self, ndate=sdate, ndays=ddays):
         global xcode, ddays, edate, sdate, bw, tw
-        print(xcode)
         plt.close()
         del self.fig, self.ax, self.canvas, self.trd
         self.code = xcode
         self.trd = tradable(self.code,ndate,ndays,False)
         sdate = self.trd.index[0].date()
         edate = self.trd.index[-1].date()
-        print(sdate,edate)
         self.fig, self.ax = mpf.plot(self.trd, title=TRDX.loc[xcode,"name"], type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=0.8, panel_ratios=(3,1),tight_layout=False)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.draw()
@@ -109,8 +96,6 @@ class customcandlestick(ctk.CTkFrame):
         
         data = loadhistory(xcode,edate)
         _fig, ax = mpf.plot(data, type="line",title=TRDX.loc[xcode,"name"],datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",returnfig=True,show_nontrading=False,figscale=2, panel_ratios=(3,1),tight_layout=False)
-
-        print(ax)
         
         canvas = FigureCanvasTkAgg(_fig, master=UI.histwin)
 
@@ -118,12 +103,8 @@ class customcandlestick(ctk.CTkFrame):
         canvas.get_tk_widget().pack()
         
         UI.histwin.protocol("WM_DELETE_WINDOW", on_exit)
-        
-        # play = False
-        # data = loadhistory(xcode,edate)
-        # mpf.plot(data, type="candle",datetime_format='%d/%m/%y',style=binance_dark,volume=True, ylabel="Price", ylabel_lower="Shares Traded",show_nontrading=False,figscale=2, panel_ratios=(3,1),tight_layout=False)
-        # play = True
     
+#creating a tab class for selecting which stock to choose which supports on-demand update
 class tab(ctk.CTkFrame):
     def __init__(self, parent, Code, Curr, Dperc):
         global xcode, ddays, edate, sdate, bw, tw
@@ -162,38 +143,44 @@ class tab(ctk.CTkFrame):
             self.Dperc.configure(text_color="#ef4f60")
 
 
+#GUI
 class UI(ctk.CTk):
     def __init__(self):
         global xcode, ddays, edate, sdate, bw, tw, tasv
-        super().__init__()
-        self.title("StockSim")
-        self.configure(fg_color="#0b1015")
-        x = (self.winfo_screenwidth()-1280)//2
-        y = (self.winfo_screenheight()-720)//2
-        self.resizable(False, False)
-        self.geometry('%dx%d+%d+%d' % (1280, 730, x, y))
+    
+        super().__init__()                                  #self refers to the GUI window
+        self.title("StockSim")                              #set title to StockSim
+        self.configure(fg_color="#0b1015")                  #set background color to #0b1015       
+        x = (self.winfo_screenwidth()-1280)//2              #calculate midpoint of screen width
+        y = (self.winfo_screenheight()-720)//2              #calculate midpoint of screen height
+        self.resizable(False, False)                        #disable window resize
+        self.geometry('%dx%d+%d+%d' % (1280, 730, x, y))    #set window size and position
+        self.wm_attributes("-alpha","0.9")                  #set window transparency
         
-        self.login()
-        self.iconframe = ctk.CTkFrame(self,fg_color="#151928", width=60, height=720, corner_radius=0)
-        self.homeicon = ctk.CTkButton(self.iconframe, text=None,image=images["home"],height=60,width=60,command=self.home)
-        self.portficon = ctk.CTkButton(self.iconframe,text=None,image=images["pf"],height=60,width=60,command=self.portf)
-        # self.wm_attributes("-alpha","0.9")
+        self.login()                                        #show login screen
+        self.iconframe = ctk.CTkFrame(self,fg_color="#151928", width=60, height=720, corner_radius=0)                       #create frame(holder) for icons
+        self.homeicon = ctk.CTkButton(self.iconframe, text=None,image=images["home"],height=60,width=60,command=self.home)  #create home button inside frame
+        self.portficon = ctk.CTkButton(self.iconframe,text=None,image=images["pf"],height=60,width=60,command=self.portf)   #create porfolio button inside frame
         
+
+#defining a function that updates the transaction history for a specific ticker
     def botrightfill(self):
-        rbw = tw+20
-        for widget in self.botrightscrollable.winfo_children():
+        rbw = tw+20                                                 #calculate width for each cell
+        for widget in self.botrightscrollable.winfo_children():     #clear previous table incase of updation
             widget.destroy()
 
-        none = ctk.CTkLabel(self.botrightscrollable, text="Initiate a trade", fg_color="#151928", width=rbw, height=15)
+        none = ctk.CTkLabel(self.botrightscrollable, text="Initiate a trade", fg_color="#151928", width=rbw, height=15)     #label for if no trade has taken place yet
         
         row1 = []
-        for i in ["Date","Code","Price","Units","Amt","Action"]:
+        for i in ["Date","Code","Price","Units","Amt","Action"]:                                                            #create column labels
             row1.append(ctk.CTkLabel(self.botrightscrollable, text=i, fg_color="#151928", width=rbw//6, height=15))
-        for i in row1:
-            i.grid(row=0,column=row1.index(i))
+        for i in row1:                                                                                                      #display column labels
+            i.grid(row=0,column=row1.index(i))                                                                              
             
         tokenledgerlist = {}
-
+        
+        #load transaction history of current token line by line
+        
         for i in list(self.tokenledger.index):
             date_label = ctk.CTkLabel(self.botrightscrollable, text=self.tokenledger.loc[i, 'date'], font=("font77", 10), width=rbw//6, padx=5,fg_color="#000022")
             token_label = ctk.CTkLabel(self.botrightscrollable, text=self.tokenledger.loc[i, 'token'], font=("font77", 7), width=rbw//6,fg_color="#000033")
@@ -216,93 +203,91 @@ class UI(ctk.CTk):
             
             tokenledgerlist[i]=rown
         
-        # self.tokenledgerlist = {i:(ctk.CTkLabel(self.botrightscrollable,text=self.tokenledger.loc[i,'date'],font=("font77",10),width=rbw//6,padx=5),ctk.CTkLabel(self.botrightscrollable,text=self.tokenledger.loc[i,'token'],font=("font77",10),width=rbw//6),ctk.CTkLabel(self.botrightscrollable,text=self.tokenledger.loc[i,'price'].round(2),font=("font77",11),width=rbw//6),ctk.CTkLabel(self.botrightscrollable,text=abs(self.tokenledger.loc[i,'qty'].round(2)),font=("font77",11),width=rbw//6),ctk.CTkLabel(self.botrightscrollable,text=self.tokenledger.loc[i,'amt'].round(2), font=("font77",11),width=rbw//6),ctk.CTkLabel(self.botrightscrollable,text="Buy" if self.tokenledger.loc[i,'qty'] > 0 else "Sell",font=("font77",11),width=rbw//6)) for i in list(self.tokenledger.index)}
+        #if no trade has taken place, then show text "Initiate a trade"
         if self.tokenledger.empty:
             none.grid(row=1,column=0,rowspan=3,columnspan=6)
             return
+        #insert values into the table in descending order of transaction date
         else:
             revkeys = sorted(list(tokenledgerlist.keys()),reverse=True)
             none.grid_forget()
             for c,i in enumerate(revkeys):
                 for j in range(6):
                     tokenledgerlist[i][j].grid(row=c+1,column=j)
-                    
+#defining a function to update the top right frame with the current token's data when user changes what token they are trading
     def toprightfill(self):
-        self.trf_name.configure(text=TRDX.loc[xcode,"name"])
-        self.trf_code.configure(text=xcode)
-        self.trf_curr.configure(text="₹ "+str(self.lddict[xcode]["Close"].iloc[0].round(3)))
-        self.trf_d.configure(text=str(self.lddict[xcode]["D"].iloc[0].round(3))+" INR")
-        self.trf_dperc.configure(text=str(self.lddict[xcode]["D%"].iloc[0].round(3))+"%")   
-        self.shares.configure(text=self.tokenledger["qty"].sum().round(2))
-        self.netval.configure(text=str(round(self.lddict[xcode]["Close"].iloc[0]*self.userledger[self.userledger["token"]==xcode]["qty"].sum(),2))+"INR")
-        self.lopenv.configure(text=self.lddict[xcode]["Open"].iloc[0].round(3))
-        self.lhighv.configure(text=self.lddict[xcode]["High"].iloc[0].round(3))
-        self.llowv.configure(text=self.lddict[xcode]["Low"].iloc[0].round(3))
-        self.lclosev.configure(text=self.lddict[xcode]["Close"].iloc[0].round(3))
+        self.trf_name.configure(text=TRDX.loc[xcode,"name"])                                  #update name being shown
+        self.trf_code.configure(text=xcode)                                                   #update code being shown
+        self.trf_curr.configure(text="₹ "+str(self.lddict[xcode]["Close"].iloc[0].round(3)))  #update current price being shown rounded off to nearest 3 decimal places
+        self.trf_d.configure(text=str(self.lddict[xcode]["D"].iloc[0].round(3))+" INR")       #update change in price being shown rounded off to nearest 3 decimal places
+        self.trf_dperc.configure(text=str(self.lddict[xcode]["D%"].iloc[0].round(3))+"%")     #update change in price percentage being shown rounded off to nearest 3 decimal places
+        self.shares.configure(text=self.tokenledger["qty"].sum().round(2))                    #update number of shares owned by the user
+        self.netval.configure(text=str(round(self.lddict[xcode]["Close"].iloc[0]*self.userledger[self.userledger["token"]==xcode]["qty"].sum(),2))+"INR")    #update net value of the shares owned by the user
+        self.lopenv.configure(text=self.lddict[xcode]["Open"].iloc[0].round(3))                                                                              #update open value being shown rounded off to nearest 3 decimal places
+        self.lhighv.configure(text=self.lddict[xcode]["High"].iloc[0].round(3))                                                                              #update high value being shown rounded off to nearest 3 decimal places                                                     
+        self.llowv.configure(text=self.lddict[xcode]["Low"].iloc[0].round(3))                                                                                #update low value being shown rounded off to nearest 3 decimal places
+        self.lclosev.configure(text=self.lddict[xcode]["Close"].iloc[0].round(3))                                                                            #update close value being shown rounded off to nearest 3 decimal places
 
-        if self.lddict[xcode]["D"].iloc[0] > 0:
+        if self.lddict[xcode]["D"].iloc[0] > 0:             #change color of text according to profit or loss
             self.trf_dperc.configure(text_color="#1f9358")
             self.trf_d.configure(text_color="#1f9358")
         else:
             self.trf_dperc.configure(text_color="#e04d5c")
             self.trf_d.configure(text_color="#e04d5c")
 
-    def movedays(self,date:datetime.date, ndays=21):
+    def movedays(self,date:datetime.date, ndays=21):        #function to move the data to certain date and/or change the number of days displayed
+        
         
         global xcode, ddays, edate, sdate, bw, tw,play, loopid
 
-        if date > datelist[-1] or date < datelist[0]-timedelta(5):
-            print("Date out of range")
+        if date > datelist[-1] or date < datelist[0]-timedelta(5):    #if date is out of range, show error message
+            
+            mb.showerror(title="Date out of range", message="Date Must be Greater than 2010-01-01 and Less than Today")
             return
 
-        if play:
-            if date == "exit":
-                self.destroy()
-
-
-            ddays = ndays
-            sdate = date
+        if play: #check if in hometab
+            ddays = ndays   #set new number of days
+            sdate = date    #set new sdate
             
-            self.graphspace.upd(ndate=sdate, ndays=ddays)
-            self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRDX.index}
+            self.graphspace.upd(ndate=sdate, ndays=ddays)   #update graph
+            self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRDX.index} #update ticker data
             
             tasv=0
             for i in self.lddict:
-                tasv += self.lddict[i]["Close"].iloc[0]*self.userledger[self.userledger["token"]==i]["qty"].sum()
+                tasv += self.lddict[i]["Close"].iloc[0]*self.userledger[self.userledger["token"]==i]["qty"].sum() #recalculate total assets value
             tasv = round(tasv,2)
             tval = tasv + liq
             tval = round(tval,2)
             
-            self.topbar_children_dynamic["Liquid Assets"].configure(text=liq)
+            self.topbar_children_dynamic["Liquid Assets"].configure(text=liq)   #update topbar
             self.topbar_children_dynamic["Assets Value"].configure(text=tasv)
             self.topbar_children_dynamic["Total Value"].configure(text=tval)
             
             for i in self.btndict:
-                self.btndict[i].upd(self.lddict[i]["Close"].iloc[0].round(1), self.lddict[i]["D%"].iloc[0].round(1))
-            self.toprightfill()
+                self.btndict[i].upd(self.lddict[i]["Close"].iloc[0].round(1), self.lddict[i]["D%"].iloc[0].round(1)) #update tabs
+            self.toprightfill()                                                                                      #update stock data
             self.currd.configure(text="Curently Displaying: {} thru {}".format(sdate, edate))
 
             try:
-                self.after_cancel(loopid)
+                self.after_cancel(loopid)                                                                            
             except:
                 pass
 
-            loopid = self.after(itertime,partial(self.movedays,datelist[(datelist.index(sdate))+1]))
-            print(sdate,edate, itertime)
+            loopid = self.after(itertime,partial(self.movedays,datelist[(datelist.index(sdate))+1]))        #This is to keep updating the interface by 1 day after set time(default 5s)
     
     
     def login(self):
         global xcode, ddays, edate, sdate, bw, tw, usr, pwd, liq
 
-        self.login_form = ctk.CTkFrame(self, width=300)           
-        self.usren = ctk.CTkEntry(self.login_form, width=150, height=32, placeholder_text="Username")
-        self.pwden = ctk.CTkEntry(self.login_form, width=150, height=32, placeholder_text="Password", show="*")
-        self.title1 = ctk.CTkLabel(self.login_form, text="Welcome To",text_color="#4c4c4c", font=("Roboto", 10))
-        self.title2 = ctk.CTkLabel(self.login_form, text="STOCKSIM", font=("Roboto", 30))
-        self.title3 = ctk.CTkLabel(self.login_form, text="Login to continue", font=("Roboto", 15))
-        self.loginbtn = ctk.CTkButton(self.login_form, text="Login", width=100, height=32)
+        self.login_form = ctk.CTkFrame(self, width=300)                                                           #frame containing login interface
+        self.usren = ctk.CTkEntry(self.login_form, width=150, height=32, placeholder_text="Username")             #entry widget to get username
+        self.pwden = ctk.CTkEntry(self.login_form, width=150, height=32, placeholder_text="Password", show="*")   #entry widget to get password 
+        self.title1 = ctk.CTkLabel(self.login_form, text="Welcome To",text_color="#4c4c4c", font=("Roboto", 10))  #label widget to display welcome message
+        self.title2 = ctk.CTkLabel(self.login_form, text="STOCKSIM", font=("Roboto", 30))                         #label widget to display STOCKSIM                      
+        self.title3 = ctk.CTkLabel(self.login_form, text="Login to continue", font=("Roboto", 15))                #label widget to display login message
+        self.loginbtn = ctk.CTkButton(self.login_form, text="Login", width=100, height=32)                        #button widget to login
 
-        self.title1.grid(row=0,column=0)
+        self.title1.grid(row=0,column=0)                                                                          #placing all elements
         self.title2.grid(row=1,column=0, padx=10,pady=(0,20))
         self.title3.grid(row=2,column=0)
         self.usren.grid(row=3,column=0)
@@ -310,54 +295,53 @@ class UI(ctk.CTk):
         self.loginbtn.grid(row=5,column=0)
         
         
-        
-        def loginx(event): # Event for bind 
+        #login function
+        def loginx(event): # Event argument is required for "bind: fucntionality (pressing enter to submit form) 
             global xcode, ddays, edate, sdate, bw, tw, usr, pwd, liq, tasv, tval, itertime, TRDX
-            usr = self.usren.get()
+            usr = self.usren.get()          #get user entry
             pwd = self.pwden.get()
-            print(usr)
-            print(pwd)
             
-            config = get_config(usr,pwd)
+            config = get_config(usr,pwd)    #get user information from database
             
             match config[0]: # fancy if-elif
-                case 200:
-                    TRDX = get_tickers(usr)
-                    sdate = config[1].date()
-                    edate = config[2].date()
-                    ddays = config[3]
-                    xcode = get_tickers(usr).index.tolist()[-1]
-                    itertime = config[4]
-                    liq = round(config[5],2)
-                    print(TRDX)
+                case 200:   #if user is in database
+                    TRDX = get_tickers(usr)                         #load the tickers user had previously traded thru this app
+                    sdate = config[1].date()                        #get last start date on graph
+                    edate = config[2].date()                        #get last end date on graph
+                    ddays = config[3]                               #get number of days being displayed in previous session
+                    xcode = get_tickers(usr).index.tolist()[-1]     #get last ticker displayed in previous session
+                    itertime = config[4]                           
+                    liq = round(config[5],2)                        #get total credits before leaving previous session
                     self.home()
                     
-                    self.iconframe.place(x=0,y=0)
+                    self.iconframe.place(x=0,y=0)                   #begin loading homescreen
                     self.homeicon.place(x=0,y=0)
                     self.portficon.place(x=0,y=60)
                 case 401:
-                    mb.showerror(title="Error", message="Check your password".format(usr), icon="info", type=mb.OK)
+                    mb.showerror(title="Error", message="Check your password".format(usr), icon="info", type=mb.OK)                                     #if password is wrong but user exists show error
                 case 400:
-                    msg = mb.showerror(title="Error", message="No user named {}, Do you want to create one?".format(usr), icon="info", type=mb.YESNO)
+                    msg = mb.showerror(title="Error", message="No user named {}, Do you want to create one?".format(usr), icon="info", type=mb.YESNO)   #if user doesn't exist ask to create one
                     
-                    if msg == "yes" and len(pwd)>5:
-                        with open("bin/plot/data/userdata.csv","a") as file:
+                    if msg == "yes" and len(pwd)>5:                                                                                                     #if user wants to create a session and password is longer than 5 characters
+                        with open("bin/plot/data/userdata.csv","a") as file:                                                                            #add user to database
                             file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,"2010-01-04",None,21,5000,10000))
                         with open("bin/plot/data/tickers.csv","a") as file:
                             file.write("{},{},{}".format(usr,"SBIN.NS","State Bank of India"))
-                        self.login()
+                        self.login()                                                                                                                    #revert back to login screen
                     else:
-                        mb.showerror(title="Error", message="Create a stronger password!".format(usr), icon="info", type=mb.OK)
+                        mb.showerror(title="Error", message="Create a stronger password!".format(usr), icon="info", type=mb.OK)                         #if weak password show error
                         
                         
                     
-        self.pwden.bind("<Return>", command=loginx)
-        self.loginbtn.configure(command=partial(loginx,None))
-        self.login_form.place(relx=0.5,rely=0.5,anchor="center")
+        self.pwden.bind("<Return>", command=loginx)                 #set enter key to submit login form
+        self.loginbtn.configure(command=partial(loginx,None))       #set login button to submit login form
+        self.login_form.place(relx=0.5,rely=0.5,anchor="center")    #place login form in center of screen
         
+#homescreen
     def home(self):
-        try:
-            for i in self.login_form.winfo_children():
+        global xcode, ddays, edate, sdate, bw, tw, tasv, play
+        try:                                                    #try clearing screen
+            for i in self.login_form.winfo_children():          
                 i.destroy()
             self.login_form.destroy()
         except:
@@ -371,31 +355,24 @@ class UI(ctk.CTk):
         
         self.homeicon.configure(state="disabled")
         self.portficon.configure(state="normal")
-        print(usr,pwd)
-        global xcode, ddays, edate, sdate, bw, tw, tasv, play
         play = True
         i = None
         self.btndict = {}
         self.txnlist = []
-        print(sdate, ddays)
-        self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRDX.index}
-        self.tokenledger = xledger.fetch_token_data(usr,xcode)
-        self.userledger = xledger.fetch_user_data(usr)
+        self.lddict = {i:tradable(i,sdate,ddays,True) for i in TRDX.index}      #load all tradable tokens
+        self.tokenledger = xledger.fetch_token_data(usr,xcode)                  #load data of token currently on screen
+        self.userledger = xledger.fetch_user_data(usr)                          #load user transaction data
         
-        print(self.userledger)
-        print(self.tokenledger)
-        
-        tasv=0
+        tasv=0                                                                  #load user's total asset value
         for i in self.lddict:
             tasv += self.lddict[i]["Close"].iloc[0]*self.userledger[self.userledger["token"]==i]["qty"].sum()
         tasv = round(tasv,2)
-        tval = round(tasv + liq,2)            
-        print(self.tokenledger)
+        tval = round(tasv + liq,2)   
+                 
         def Trade(Tcode):
             global xcode, ddays, edate, sdate, bw, tw
             del xcode
             xcode = Tcode
-            print(xcode)
             self.tokenledger = xledger.fetch_token_data(usr,xcode)
             self.userledger = xledger.fetch_user_data(usr)
             self.toprightfill()
@@ -422,11 +399,11 @@ class UI(ctk.CTk):
             txr = yf.Ticker(tname)
 
             if tname in TRDX.keys():
-                print("already added")
+                mb.showinfo(title="Already added", message="Ticker is already added")
             elif txr.info["quoteType"] == "NONE":
-                print("invalid name")
+                mb.showerror(title="Invalid Trade Symbol", message="Please check the symbol or refer to https://finance.yahoo.com/lookup/ for valid BSE/NSE symbols")
             elif txr.info["financialCurrency"] != "INR":
-                print("not indian stock")
+                mb.showerror(title="Invalid Currency", message="Please check the symbol or refer to https://finance.yahoo.com/lookup/ for valid BSE/NSE symbols trading in INR")
             else:
                 add_tickers(usr,sdate,ddays,tname)
                 self.addentry.delete(0,200)
@@ -435,8 +412,6 @@ class UI(ctk.CTk):
                 self.btndict[tname]= tab(self.leftscroller, tname, self.lddict[tname]["Close"].iloc[0].round(3), self.lddict[tname]["D%"].iloc[0].round(1))
                 self.btndict[tname].tradbutton.configure(command=partial(Trade, tname))
                 self.btndict[tname].pack(anchor="w",pady=(0,1))
-                print(self.lddict)
-            # addentry.delete(0,tk.END)
 
             self.addentry.grid_forget()
             self.addcnf.grid_forget()
@@ -544,15 +519,13 @@ class UI(ctk.CTk):
         self.graphspace = customcandlestick(self)
         
         self.topbar = ctk.CTkFrame(self, width=vw,height=48,fg_color="#000")
-        # self.usrname = ctk.CTkLabel(self.topbar, text="User: {}".format(usr), width=tw, height=24, padx=10, fg_color="#000")
         self.topbar_children_static = {"Total Value":ctk.CTkLabel(self.topbar, text="Total Value", width=vw//2, height=10, fg_color="#000"),"Liquid Assets":ctk.CTkLabel(self.topbar, text="Liquid Assets", width=vw//4, height=10, fg_color="#000"),"Assets Value":ctk.CTkLabel(self.topbar, text="Assets Value", width=vw//4, height=10,  fg_color="#000")}
         self.topbar_children_dynamic = {"Total Value": ctk.CTkLabel(self.topbar, text=tval, width=vw//2, height=36, fg_color="#000"),"Liquid Assets": ctk.CTkLabel(self.topbar, text=liq, width=vw//4, height=36, fg_color="#000"),"Assets Value":ctk.CTkLabel(self.topbar, text=tasv, width=vw//4, height=36,  fg_color="#000")}
         
         for count, i in enumerate(self.topbar_children_static):
             self.topbar_children_static[i].grid(row=0,column=count)
             self.topbar_children_dynamic[i].grid(row=1,column=count)
-        # self.usrname.pack()
-        
+            
         self.currd = ctk.CTkLabel(self,text="Curently Displaying: {} thru {}".format(sdate, edate), fg_color="#000", width=rfw//2+2, height=6, anchor="w",padx=5)
         
         self.toprightframe = ctk.CTkFrame(self, width=rfw, height=360, corner_radius=0,fg_color="#2d303e")
@@ -593,9 +566,6 @@ class UI(ctk.CTk):
         self.netval.configure(text=str(round(self.lddict[xcode]["Close"].iloc[0]*self.userledger[self.userledger["token"]==xcode]["qty"].sum(),2))+"INR")
         
         self.toprightframe.place(x=1240-tw,y=0)
-        
-        # self.prev = ctk.CTkButton(self,text="<",font=("Helvetica",30,"bold"),width=28,height=34,corner_radius=1024, command= lambda: go(date = (sdate-timedelta(days=1)).strftime('%d/%m/%Y'), ndays = str(ddays)+" Days", isforward=False))
-        # self.next = ctk.CTkButton(self,text=">",font=("Helvetica",30,"bold"),width=28,height=34,corner_radius=1024, command= lambda: go(date = (sdate+timedelta(days=1)).strftime('%d/%m/%Y'), ndays = str(ddays)+" Days"))
         
         rbw = tw+20
         self.botrightframe = ctk.CTkFrame(self, width=rbw, height=300, corner_radius=0, fg_color="#151928",border_color="#fff",border_width=1)
@@ -648,8 +618,6 @@ class UI(ctk.CTk):
         self.currd.place(x=20+tw,y=48)
         self.leftframe.place(x=60,y=0)
         self.topbar.place(x=60+tw,y=0)
-        # self.prev.place(x=1280-500,y=0)
-        # self.next.place(x=1280-80-500,y=0)
         self.movedays(date=sdate)
         
     def portf(self):
@@ -753,4 +721,3 @@ class UI(ctk.CTk):
         self.portflowerframe.place(x=60,y=370)
 
         del txn_id_label, date_label, user_label, code_label, units_label, price_label, action_label, liqchange_label, rown
-
