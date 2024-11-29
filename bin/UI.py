@@ -273,7 +273,7 @@ class UI(ctk.CTk):
             except:
                 pass
 
-            loopid = self.after(itertime,partial(self.movedays,datelist[(datelist.index(sdate))+1]))        #This is to keep updating the interface by 1 day after set time(default 5s)
+            loopid = self.after(itertime,partial(self.movedays,datelist[(datelist.index(sdate))+1],ndays))        #This is to keep updating the interface by 1 day after set time(default 5s)
     
     
     def login(self):
@@ -456,7 +456,7 @@ class UI(ctk.CTk):
                 elif what == "sell":
                     if float(nstock) > float(self.tokenledger["qty"].sum()):
                         mb.showerror(title="Error", message="Not enough Shares to sell", icon="info", type=mb.OK)
-                    elif sdate < datetime.strptime(self.userledger[self.userledger["token"]==xcode]["date"].iloc[0], "%Y-%m-%d").date():
+                    elif not(self.userledger[self.userledger["token"]==xcode].empty) and sdate < self.userledger[self.userledger["token"]==xcode]["date"].iloc[0]:
                         mb.showerror(title="Error", message="You can't sell before buying", icon="info", type=mb.OK)
                     else:
                         sell_buy_update(self.lddict[xcode]["Close"].iloc[0], -float(nstock))
@@ -687,7 +687,7 @@ class UI(ctk.CTk):
             
         self.txndata = []
         
-        for i in xledger.data[xledger.data["user"] == usr].index:
+        for i in xledger.data[xledger.data["user"] == usr].index.sort_values(ascending=False):
             txn_id_label = ctk.CTkLabel(self.pflscroll, text=i,fg_color="#000012",width=lpw)
             date_label = ctk.CTkLabel(self.pflscroll, text=xledger.data['date'].iloc[i],fg_color="#000024",width=lpw)
             user_label = ctk.CTkLabel(self.pflscroll, text=xledger.data['user'].iloc[i],fg_color="#000036",width=lpw)
@@ -713,7 +713,7 @@ class UI(ctk.CTk):
             
             self.txndata.append(rown)
 
-        for i in range(len(self.txndata)):
+        for i in xledger.data[xledger.data["user"] == usr].index.sort_values():
             for j in range(8):
                 self.txndata[i][j].grid(row=i+1,column=j)
         

@@ -2,5 +2,5 @@ import pandas as pd
 from datetime import *
 from plot.data import *
 
-trx = yf.Ticker("AAPL")
-print(trx.info)
+led = ledger("bin\plot\data\ledger.csv")
+print(led.data["date"])

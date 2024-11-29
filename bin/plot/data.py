@@ -52,7 +52,6 @@ def get_config(usr,pwd):
     x["sdate"] = pd.to_datetime(x["sdate"], format='%Y-%m-%d')
     x["edate"] = pd.to_datetime(x["edate"], format='%Y-%m-%d')
     # print(x[x["usr"]==usr]["pwd"].values[0])
-    print(x)
     if usr in x.index:
         if pd.Series(x.loc[usr]["pwd"]).iloc[-1] == pwd:
             return (200, pd.Series(x.loc[usr]["sdate"]).iloc[-1],pd.Series(x.loc[usr]["edate"]).iloc[-1], pd.Series(x.loc[usr]["ndays"]).iloc[-1],pd.Series(x.loc[usr]["itertime"]).iloc[-1],pd.Series(x.loc[usr]["liq"]).iloc[-1])
@@ -103,8 +102,6 @@ def lfw(name):
     x = x.drop(columns=["Dividends","Stock Splits"]).loc["2010-01-04":]
     if x.index[0] != "2010-01-04":
         finalindex = x.index[0]
-        print(datelist.index("2010-01-04"))
-        print(datelist[datelist.index("2010-01-04"):datelist.index(finalindex)])
         zeroindex = datelist[datelist.index("2010-01-04"):datelist.index(finalindex)]
         zdf = pd.DataFrame(0,columns=["Open","High","Low","Close","Volume"],index=zeroindex)
         x = pd.concat([zdf,x])
@@ -130,6 +127,7 @@ class ledger():
         self.file = file
         import pandas as pd
         self.data = pd.read_csv(file,header=None,names=["date","user","token","price","qty","amt"],dtype={"user":str,"token":str,"price":float,"qty":float,"amt":float},index_col=0)
+        self.data["date"] = pd.to_datetime(self.data["date"], format='%Y-%m-%d').dt.date
         if self.data.empty:
             self.last_index = -1
         else:
