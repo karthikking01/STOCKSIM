@@ -369,9 +369,9 @@ class UI(ctk.CTk):
         tasv = round(tasv,2)
         tval = round(tasv + liq,2)   
                  
-        def Trade(Tcode):
-            global xcode, ddays, edate, sdate, bw, tw
-            del xcode
+        def Trade(Tcode):                                          #function to change token on screen  
+            global xcode, ddays, edate, sdate, bw, tw   
+            del xcode                                              #refresh token data
             xcode = Tcode
             self.tokenledger = xledger.fetch_token_data(usr,xcode)
             self.userledger = xledger.fetch_user_data(usr)
@@ -384,27 +384,27 @@ class UI(ctk.CTk):
                 else:
                     self.btndict[i].tradbutton.configure(state="normal")
 
-            self.graphspace.upd(ndate=sdate, ndays=ddays)
+            self.graphspace.upd(ndate=sdate, ndays=ddays)          #refresh graph
             self.currd.configure(text="Curently Displaying: {} thru {}".format(sdate, edate))
-        def addx():
+        def addx():                                                      #function to initiate adding new token
             self.add_btn.grid_forget()
             self.addentry.grid(row=0,column=0,padx=5,columnspan=2)
             self.addcnf.grid(row=1,column=0,padx=5)
             self.addcanc.grid(row=1,column=1,padx=5)
 
-        def add_cnf():
+        def add_cnf():                                                      #function to add new token
             global TRDX
             self.add_btn.grid(row=0,column=0,padx=5,columnspan=2)
             tname = self.addentry.get()
             txr = yf.Ticker(tname)
 
-            if tname in TRDX.keys():
+            if tname in TRDX.keys():                                        #check if ticker already added
                 mb.showinfo(title="Already added", message="Ticker is already added")
-            elif txr.info["quoteType"] == "NONE":
+            elif txr.info["quoteType"] == "NONE":                          #check if ticker is valid
                 mb.showerror(title="Invalid Trade Symbol", message="Please check the symbol or refer to https://finance.yahoo.com/lookup/ for valid BSE/NSE symbols")
-            elif txr.info["financialCurrency"] != "INR":
+            elif txr.info["financialCurrency"] != "INR":                    #check if ticker is tradable in INR
                 mb.showerror(title="Invalid Currency", message="Please check the symbol or refer to https://finance.yahoo.com/lookup/ for valid BSE/NSE symbols trading in INR")
-            else:
+            else:                                                            #add ticker to database0
                 add_tickers(usr,sdate,ddays,tname)
                 self.addentry.delete(0,200)
                 TRDX = get_tickers(usr)
@@ -417,24 +417,24 @@ class UI(ctk.CTk):
             self.addcnf.grid_forget()
             self.addcanc.grid_forget()
 
-        def add_canc():
+        def add_canc():                                                     #function to cancel adding new token
             self.add_btn.grid(row=0,column=0,padx=5,columnspan=2)
             self.addentry.grid_forget()
             self.addcnf.grid_forget()
             self.addcanc.grid_forget()
 
-        def buy():
+        def buy():                                                           #function to initiate buying
             self.buy.configure(height=24,text="Confirm?",font=("Helvetica",15,"bold"), command=partial(confirm, "buy"))
             self.entry.grid(row=4,column=0,rowspan=1,columnspan=1)
             self.buy.grid_configure(row=5,column=0,rowspan=1,columnspan=1)
             self.sell.configure(text="Cancel",command=cancel)
-        def sell():
+        def sell():                                                          #function to initiate selling
             self.sell.configure(height=24, text="Confirm?",font=("Helvetica",15,"bold"), command=partial(confirm, "sell"))
             self.entry.grid(row=4,column=1,rowspan=1,columnspan=1)
             self.sell.grid_configure(row=5,column=1,rowspan=1,columnspan=1)
             self.buy.configure(text="Cancel",command=cancel)
-        def confirm(what):
-            self.buy.configure(text="Buy",font=("Helvetica",25,"bold"), command=buy,height=48)
+        def confirm(what):                                                   #function to confirm buying/selling
+            self.buy.configure(text="Buy",font=("Helvetica",25,"bold"), command=buy,height=48)               
             self.sell.configure(text="Sell",font=("Helvetica",25,"bold"), command=sell,height=48)
             self.entry.grid_forget()
             self.buy.grid_configure(row=4,column=0,rowspan=2,columnspan=1)
@@ -447,25 +447,25 @@ class UI(ctk.CTk):
                 mb.showerror(title="Error", message="Enter a valid quantity", icon="info", type=mb.OK)
                 return
             
-            if float(nstock)>0:
+            if float(nstock)>0:                                              #check if quantity is positive
                 if what == "buy":
                     if float(nstock)*self.lddict[xcode]["Open"].iloc[0] > float(liq):
                         mb.showerror(title="Error", message="Not enough Liquidity", icon="info", type=mb.OK)
                     else:
                         sell_buy_update(self.lddict[xcode]["Open"].iloc[0], float(nstock))
-                elif what == "sell":
+                elif what == "sell":                                          #check if selling or buying
                     if float(nstock) > float(self.tokenledger["qty"].sum()):
                         mb.showerror(title="Error", message="Not enough Shares to sell", icon="info", type=mb.OK)
                     elif not(self.userledger[self.userledger["token"]==xcode].empty) and sdate < self.userledger[self.userledger["token"]==xcode]["date"].iloc[0]:
                         mb.showerror(title="Error", message="You can't sell before buying", icon="info", type=mb.OK)
                     else:
                         sell_buy_update(self.lddict[xcode]["Close"].iloc[0], -float(nstock))
-            elif float(nstock)==0:
+            elif float(nstock)==0:                                             #check if quantity is zero
                 mb.showerror(title="Good thinking!!", message="Try that in real world", icon="info", type=mb.OK)
             else:
                 mb.showerror(title="Error", message="Enter a valid quantity", icon="info", type=mb.OK)
             del nstock
-        def cancel():
+        def cancel():                                                        #function to cancel buying/selling
             self.buy.configure(text="Buy",font=("Helvetica",25,"bold"), command=buy,height=48)
             self.sell.configure(text="Sell",font=("Helvetica",25,"bold"), command=sell,height=48)
             self.entry.grid_forget()
