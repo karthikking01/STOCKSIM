@@ -614,7 +614,7 @@ class UI(ctk.CTk):
         self.shares.grid(row=12,column=0,columnspan=1, rowspan=2)
         self.netval.grid(row=12,column=1,columnspan=1, rowspan=2)
         
-        self.graphspace.place(x=60+tw, y=48+48)
+        self.graphspace.place(x=80+tw, y=48+48)
         self.currd.place(x=20+tw,y=48)
         self.leftframe.place(x=60,y=0)
         self.topbar.place(x=60+tw,y=0)
