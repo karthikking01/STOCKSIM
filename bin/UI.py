@@ -326,7 +326,7 @@ class UI(ctk.CTk):
                         with open("bin/plot/data/userdata.csv","a") as file:                                                                            #add user to database
                             file.write("{},{},{},{},{},{},{}\n".format(usr,pwd,"2010-01-04",None,21,5000,10000))
                         with open("bin/plot/data/tickers.csv","a") as file:
-                            file.write("{},{},{}".format(usr,"SBIN.NS","State Bank of India"))
+                            file.write("{},{},{}\n".format(usr,"SBIN.NS","State Bank of India"))
                         self.login()                                                                                                                    #revert back to login screen
                     else:
                         mb.showerror(title="Error", message="Create a stronger password!".format(usr), icon="info", type=mb.OK)                         #if weak password show error

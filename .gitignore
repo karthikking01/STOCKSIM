@@ -4,3 +4,4 @@
 *.BO.csv
 *.pyc
 ~*
+/.spyproject
